@@ -6,7 +6,7 @@ TERMUX_PKG_LICENSE="GPL-3.0-or-later"
 TERMUX_PKG_MAINTAINER="@daslearning"
 TERMUX_PKG_VERSION=1.3.0
 TERMUX_PKG_DEPENDS="python"
-TERMUX_PKG_BUILD_DEPENDS="python-dev"
+#TERMUX_PKG_BUILD_DEPENDS="python-dev"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PYTHON_VERSION=3.11
 TERMUX_PREFIX=/data/data/com.termux/files/usr
@@ -49,9 +49,9 @@ termux_step_pre_configure() {
     }
 
     # Compiler and linker flags for Android
-    CPPFLAGS="-DANDROID -I${TERMUX_PKG_SRCDIR} -I${NDK_SYSROOT}/usr/include -I${TERMUX_PREFIX}/include/python${TERMUX_PYTHON_VERSION}"
-    CFLAGS="-Wno-unused-variable -fPIC --target=aarch64-linux-android28 -D_GNU_SOURCE"
-    LDFLAGS="-L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} -lespeak-ng -Wl,--verbose"
+    CPPFLAGS+=" -DANDROID -I${TERMUX_PKG_SRCDIR} -I${NDK_SYSROOT}/usr/include -I${TERMUX_PREFIX}/include/python${TERMUX_PYTHON_VERSION}"
+    CFLAGS+=" -Wno-unused-variable -fPIC --target=aarch64-linux-android28 -D_GNU_SOURCE"
+    LDFLAGS+=" -L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} -lespeak-ng -Wl,--verbose"
     export CFLAGS="$CFLAGS $CPPFLAGS"
     export LDFLAGS="$LDFLAGS"
 
@@ -62,8 +62,8 @@ termux_step_pre_configure() {
     # Python paths
     export PYTHON_VERSION="${TERMUX_PYTHON_VERSION}"
     export PYTHON_EXECUTABLE=$TERMUX_PREFIX/bin/python3.11
-    export PYTHON_INCLUDE_DIR=$TERMUX_PREFIX/include/python${TERMUX_PYTHON_VERSION}
-    export PYTHON_LIBRARY=$TERMUX_PREFIX/lib/libpython${TERMUX_PYTHON_VERSION}.so
+    export PYTHON_INCLUDE_DIR=$TERMUX_PREFIX/include/python${PYTHON_VERSION}
+    export PYTHON_LIBRARY=$TERMUX_PREFIX/lib/libpython${PYTHON_VERSION}.so
 
     # Debug paths
     echo "DEBUG: CC=$CC"
@@ -108,39 +108,18 @@ termux_step_pre_configure() {
     # Debug final CFLAGS and LDFLAGS
     echo "DEBUG: Final CFLAGS=$CFLAGS"
     echo "DEBUG: Final LDFLAGS=$LDFLAGS"
-
-    # Check disk space
-    echo "DEBUG: Disk space in $TERMUX_PKG_SRCDIR:"
-    df -h $TERMUX_PKG_SRCDIR
 }
 
 termux_step_make() {
     # Compile espeakbridge.c to espeakbridge.so
     echo "DEBUG: Compiling with command: $CC $CFLAGS -c ${TERMUX_PKG_SRCDIR}/espeakbridge.c -o espeakbridge.o"
-    $CC $CFLAGS -c ${TERMUX_PKG_SRCDIR}/espeakbridge.c -o espeakbridge.o || {
-        echo "Error: Compilation failed"
-        exit 1
-    }
-    echo "DEBUG: Checking for espeakbridge.o:"
-    ls -l espeakbridge.o
+    $CC $CFLAGS -c ${TERMUX_PKG_SRCDIR}/espeakbridge.c -o espeakbridge.o
     echo "DEBUG: Linking with command: $CC -shared $LDFLAGS espeakbridge.o -o espeakbridge.so"
-    $CC -shared $LDFLAGS espeakbridge.o -o espeakbridge.so 2> linker_errors.log || {
-        echo "Error: Linking failed, see linker_errors.log"
-        cat linker_errors.log
-        exit 1
-    }
-    echo "DEBUG: Checking for espeakbridge.so:"
-    ls -l espeakbridge.so
+    $CC -shared $LDFLAGS espeakbridge.o -o espeakbridge.so
 }
 
 termux_step_make_install() {
     # Install espeakbridge.so
-    echo "DEBUG: Installing espeakbridge.so to $TERMUX_PREFIX/lib/python${TERMUX_PYTHON_VERSION}/site-packages/piper/"
     mkdir -p $TERMUX_PREFIX/lib/python${TERMUX_PYTHON_VERSION}/site-packages/piper
-    cp espeakbridge.so $TERMUX_PREFIX/lib/python${TERMUX_PYTHON_VERSION}/site-packages/piper/ || {
-        echo "Error: Failed to copy espeakbridge.so to $TERMUX_PREFIX/lib/python${TERMUX_PYTHON_VERSION}/site-packages/piper/"
-        exit 1
-    }
-    echo "DEBUG: Verifying installed espeakbridge.so:"
-    ls -l $TERMUX_PREFIX/lib/python${TERMUX_PYTHON_VERSION}/site-packages/piper/espeakbridge.so
+    cp espeakbridge.so $TERMUX_PREFIX/lib/python${TERMUX_PYTHON_VERSION}/site-packages/piper/
 }
