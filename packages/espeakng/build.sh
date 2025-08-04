@@ -14,7 +14,7 @@ TERMUX_PKG_BREAKS="espeak-dev"
 TERMUX_PKG_REPLACES="espeak-dev"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_HOSTBUILD=true
-TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async"
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async --without-pcaudiolib"
 TERMUX_PREFIX=/data/data/com.termux/files/usr
 
 termux_step_post_get_source() {
@@ -39,7 +39,7 @@ termux_step_post_get_source() {
 
 termux_step_host_build() {
     cd "${TERMUX_PKG_SRCDIR}" || exit 1
-    ./configure && make
+    ./configure --without-pcaudiolib && make
 }
 
 termux_step_pre_configure() {
@@ -63,7 +63,7 @@ termux_step_pre_configure() {
 
     # Configure flags for static library
     CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
-    LDFLAGS="-L${NDK_LIB} -llog -landroid -lc++"
+    LDFLAGS="-L${NDK_LIB} -llog -landroid -lc++ -lc"
     export CFLAGS="$CFLAGS"
     export LDFLAGS="$LDFLAGS"
 
@@ -79,23 +79,48 @@ termux_step_pre_configure() {
 }
 
 termux_step_make() {
-    make -B src/libespeak-ng.a || {
+    # Build only the static library
+    make -B src/libespeak-ng.la || {
         echo "Error: make failed"
+        exit 1
+    }
+    # Extract libespeak-ng.a from .libs directory
+    mv src/.libs/libespeak-ng.a src/libespeak-ng.a || {
+        echo "Error: Failed to move libespeak-ng.a"
         exit 1
     }
 }
 
 termux_step_make_install() {
     # Install static library and headers
-    make install-data install-exec
     install -Dm644 src/libespeak-ng.a $TERMUX_PREFIX/lib/libespeak-ng.a || {
         echo "Error: Failed to install libespeak-ng.a"
         exit 1
     }
+    install -Dm644 src/include/espeak-ng/*.h $TERMUX_PREFIX/include/espeak-ng/ || {
+        echo "Error: Failed to install espeak-ng headers"
+        exit 1
+    }
+    install -Dm644 src/include/espeak/speak_lib.h $TERMUX_PREFIX/include/espeak/speak_lib.h || {
+        echo "Error: Failed to install speak_lib.h"
+        exit 1
+    }
+    install -Dm644 espeak-ng.pc $TERMUX_PREFIX/lib/pkgconfig/espeak-ng.pc || {
+        echo "Error: Failed to install espeak-ng.pc"
+        exit 1
+    }
+    # Install espeak-ng-data
+    rm -rf $TERMUX_PREFIX/share/espeak-ng-data
+    mkdir -p $TERMUX_PREFIX/share/espeak-ng-data
+    cp -prf espeak-ng-data/* $TERMUX_PREFIX/share/espeak-ng-data || {
+        echo "Error: Failed to install espeak-ng-data"
+        exit 1
+    }
+    # Verify installation
     echo "DEBUG: Verifying installed libespeak-ng.a:"
     ls -l $TERMUX_PREFIX/lib/libespeak-ng.a
     echo "DEBUG: Verifying installed speak_lib.h:"
-    ls -l $TERMUX_PREFIX/include/espeak-ng/speak_lib.h
+    ls -l $TERMUX_PREFIX/include/espeak/speak_lib.h
     echo "DEBUG: Checking for espeak_TextToPhonemesWithTerminator in libespeak-ng.a:"
     nm $TERMUX_PREFIX/lib/libespeak-ng.a | grep espeak_TextToPhonemesWithTerminator || {
         echo "Error: espeak_TextToPhonemesWithTerminator not found in libespeak-ng.a"
