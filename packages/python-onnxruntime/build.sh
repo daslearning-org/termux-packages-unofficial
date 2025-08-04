@@ -3,11 +3,13 @@ TERMUX_PKG_DESCRIPTION="Cross-platform, high performance ML inferencing and trai
 TERMUX_PKG_LICENSE="MIT"
 TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION="1.22.1"
+TERMUX_PYTHON_VERSION="3.11"
+TERMUX_PREFIX="/data/data/com.termux/files/usr"
 TERMUX_PKG_SRCURL=git+https://github.com/microsoft/onnxruntime
-TERMUX_PKG_DEPENDS="abseil-cpp, libc++, protobuf, libre2, python"
+TERMUX_PKG_DEPENDS="abseil-cpp, libc++, protobuf, libre2"
 TERMUX_PKG_BUILD_DEPENDS="python-numpy"
 TERMUX_PKG_BUILD_IN_SRC=true
-TERMUX_PKG_PYTHON_COMMON_DEPS="wheel, build, packaging"
+TERMUX_PKG_PYTHON_COMMON_DEPS="wheel, build, packaging, numpy"
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_UPDATE_TAG_TYPE="latest-release-tag"
 
@@ -49,10 +51,10 @@ termux_step_make_install() {
 	pip install --no-deps --prefix="$TERMUX_PREFIX" "$TERMUX_PKG_SRCDIR/dist/${_wheel}"
 }
 
-termux_step_create_debscripts() {
-	cat <<- EOF > ./postinst
-	#!$TERMUX_PREFIX/bin/sh
-	echo "Installing dependencies through pip..."
-	pip3 install onnxruntime
-	EOF
-}
+#termux_step_create_debscripts() {
+#	cat <<- EOF > ./postinst
+#	#!$TERMUX_PREFIX/bin/sh
+#	echo "Installing dependencies through pip..."
+#	pip3 install onnxruntime
+#	EOF
+#}
