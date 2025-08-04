@@ -6,7 +6,7 @@ TERMUX_PKG_LICENSE="GPL-3.0-or-later"
 TERMUX_PKG_MAINTAINER="@daslearning"
 TERMUX_PKG_VERSION=1.3.0
 TERMUX_PKG_DEPENDS="python"
-TERMUX_PKG_BUILD_DEPENDS="python-dev"
+#TERMUX_PKG_BUILD_DEPENDS="python-dev"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PYTHON_VERSION=3.11
 TERMUX_PREFIX=/data/data/com.termux/files/usr
@@ -61,7 +61,7 @@ termux_step_pre_configure() {
 
     # Python paths
     export PYTHON_VERSION="${TERMUX_PYTHON_VERSION}"
-    export PYTHON_EXECUTABLE=$(command -v python3.11 || command -v python3)
+    export PYTHON_EXECUTABLE=$TERMUX_PREFIX/bin/python3.11
     export PYTHON_INCLUDE_DIR=$TERMUX_PREFIX/include/python${PYTHON_VERSION}
     export PYTHON_LIBRARY=$TERMUX_PREFIX/lib/libpython${PYTHON_VERSION}.so
 
@@ -69,18 +69,11 @@ termux_step_pre_configure() {
     echo "DEBUG: CC=$CC"
     echo "DEBUG: CXX=$CXX"
     echo "DEBUG: PYTHON_EXECUTABLE=$PYTHON_EXECUTABLE"
-    echo "DEBUG: PYTHON_VERSION=$($PYTHON_EXECUTABLE --version)"
     echo "DEBUG: PYTHON_INCLUDE_DIR=$PYTHON_INCLUDE_DIR"
     echo "DEBUG: PYTHON_LIBRARY=$PYTHON_LIBRARY"
     echo "DEBUG: TERMUX_PKG_SRCDIR=$TERMUX_PKG_SRCDIR"
     echo "DEBUG: Files in TERMUX_PKG_SRCDIR:"
     ls -l $TERMUX_PKG_SRCDIR
-
-    # Verify Python version
-    if ! [[ $($PYTHON_EXECUTABLE --version) =~ 3\.11 ]]; then
-        echo "Error: Python 3.11 is required, but $($PYTHON_EXECUTABLE --version) is found."
-        exit 1
-    fi
 
     # Verify Python development files
     if [ ! -f "$PYTHON_INCLUDE_DIR/pyconfig.h" ]; then
@@ -106,21 +99,22 @@ termux_step_pre_configure() {
     echo "DEBUG: Checking for espeak_TextToPhonemesWithTerminator in libespeak-ng.so:"
     nm -D $TERMUX_PREFIX/lib/libespeak-ng.so | grep espeak_TextToPhonemesWithTerminator || echo "WARNING: espeak_TextToPhonemesWithTerminator not found"
 
-    # Get Python compiler and linker flags, excluding problematic flags
-    PYTHON_CFLAGS=$($PYTHON_EXECUTABLE-config --cflags | sed 's|-I/usr/include/python3.11||;s/-fstack-clash-protection//;s/-fcf-protection[^[:space:]]*//')
-    PYTHON_LDFLAGS=$($PYTHON_EXECUTABLE-config --ldflags)
+    # Hardcode Python compiler and linker flags for aarch64
+    PYTHON_CFLAGS="-I${TERMUX_PREFIX}/include/python3.11 -DANDROID -D_GNU_SOURCE -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall"
+    PYTHON_LDFLAGS="-L${TERMUX_PREFIX}/lib -lpython3.11 -ldl -lm"
     export CFLAGS="$CFLAGS $PYTHON_CFLAGS"
     export LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
 
-    # Debug raw and final CFLAGS and LDFLAGS
-    echo "DEBUG: Raw PYTHON_CFLAGS=$($PYTHON_EXECUTABLE-config --cflags)"
+    # Debug final CFLAGS and LDFLAGS
     echo "DEBUG: Final CFLAGS=$CFLAGS"
     echo "DEBUG: Final LDFLAGS=$LDFLAGS"
 }
 
 termux_step_make() {
     # Compile espeakbridge.c to espeakbridge.so
+    echo "DEBUG: Compiling with command: $CC $CFLAGS -c ${TERMUX_PKG_SRCDIR}/espeakbridge.c -o espeakbridge.o"
     $CC $CFLAGS -c ${TERMUX_PKG_SRCDIR}/espeakbridge.c -o espeakbridge.o
+    echo "DEBUG: Linking with command: $CC -shared $LDFLAGS espeakbridge.o -o espeakbridge.so"
     $CC -shared $LDFLAGS espeakbridge.o -o espeakbridge.so
 }
 
