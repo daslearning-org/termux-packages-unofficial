@@ -6,7 +6,7 @@ TERMUX_PKG_LICENSE="GPL-3.0-or-later"
 TERMUX_PKG_MAINTAINER="@daslearning"
 TERMUX_PKG_VERSION=1.3.0
 TERMUX_PKG_DEPENDS="python, espeakng"
-TERMUX_PKG_BUILD_DEPENDS="espeakng"
+TERMUX_PKG_BUILD_DEPENDS="python-dev, espeakng"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PYTHON_VERSION=3.11
 TERMUX_PREFIX=/data/data/com.termux/files/usr
@@ -34,7 +34,7 @@ termux_step_pre_configure() {
     file $NDK_LIB/liblog.so
     file $NDK_LIB/libandroid.so
     file $TERMUX_PREFIX/lib/libpython3.11.so
-    file $TERMUX_PREFIX/lib/libespeak-ng.so
+    file $TERMUX_PREFIX/lib/libespeak-ng.a
 
     # Copy espeakbridge.c and speak_lib.h to TERMUX_PKG_SRCDIR
     PACKAGE_DIR="$HOME/termux-packages/packages/espeakbridge"
@@ -51,7 +51,7 @@ termux_step_pre_configure() {
     # Compiler and linker flags for Android
     CPPFLAGS="-DANDROID -I${TERMUX_PKG_SRCDIR} -I${NDK_SYSROOT}/usr/include -I${TERMUX_PREFIX}/include/python${TERMUX_PYTHON_VERSION} -I${TERMUX_PREFIX}/include/espeak-ng"
     CFLAGS="-Wno-unused-variable -fPIC --target=aarch64-linux-android28 -D_GNU_SOURCE"
-    LDFLAGS="-L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} -lespeak-ng -Wl,--verbose"
+    LDFLAGS="-L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} $TERMUX_PREFIX/lib/libespeak-ng.a -Wl,--verbose"
     export CFLAGS="$CFLAGS $CPPFLAGS"
     export LDFLAGS="$LDFLAGS"
 
@@ -90,15 +90,15 @@ termux_step_pre_configure() {
         echo "Error: speak_lib.h not found in $TERMUX_PKG_SRCDIR"
         exit 1
     fi
-    if [ ! -f "$TERMUX_PREFIX/lib/libespeak-ng.so" ]; then
-        echo "Error: libespeak-ng.so not found in $TERMUX_PREFIX/lib"
+    if [ ! -f "$TERMUX_PREFIX/lib/libespeak-ng.a" ]; then
+        echo "Error: libespeak-ng.a not found in $TERMUX_PREFIX/lib"
         exit 1
     fi
 
     # Check for espeak_TextToPhonemesWithTerminator
-    echo "DEBUG: Checking for espeak_TextToPhonemesWithTerminator in libespeak-ng.so:"
-    nm -D $TERMUX_PREFIX/lib/libespeak-ng.so | grep espeak_TextToPhonemesWithTerminator || {
-        echo "Error: espeak_TextToPhonemesWithTerminator not found in libespeak-ng.so"
+    echo "DEBUG: Checking for espeak_TextToPhonemesWithTerminator in libespeak-ng.a:"
+    nm $TERMUX_PREFIX/lib/libespeak-ng.a | grep espeak_TextToPhonemesWithTerminator || {
+        echo "Error: espeak_TextToPhonemesWithTerminator not found in libespeak-ng.a"
         exit 1
     }
 
