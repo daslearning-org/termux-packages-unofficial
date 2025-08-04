@@ -2,7 +2,7 @@
 
 #define Py_LIMITED_API 0x03090000
 #include <Python.h>
-#include <espeak-ng/speak_lib.h>
+#include "speak_lib.h"
 
 #define CLAUSE_INTONATION_FULL_STOP 0x00000000
 #define CLAUSE_INTONATION_COMMA 0x00001000
