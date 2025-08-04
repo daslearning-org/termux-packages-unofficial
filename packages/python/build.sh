@@ -1,6 +1,5 @@
 TERMUX_PKG_HOMEPAGE=https://python.org/
 TERMUX_PKG_DESCRIPTION="Python 3 programming language intended to enable clear programs"
-export TERMUX_PREFIX="/data/data/com.termux/files/usr"
 # License: PSF-2.0
 TERMUX_PKG_LICENSE="custom"
 TERMUX_PKG_LICENSE_FILE="LICENSE"
@@ -47,6 +46,8 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" ac_cv_func_sem_unlink=yes"
 # Force enable posix shared memory.
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" ac_cv_func_shm_open=yes"
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" ac_cv_func_shm_unlink=yes"
+# Assume tzset() works
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" ac_cv_working_tzset=yes"
 
 TERMUX_PKG_RM_AFTER_INSTALL="
 lib/python${_MAJOR_VERSION}/test
@@ -75,6 +76,9 @@ termux_step_pre_configure() {
 	else
 		TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" --with-build-python=python$_MAJOR_VERSION"
 	fi
+
+	# For multiprocessing libs
+	export LDFLAGS+=" -landroid-posix-semaphore"
 
 	export LIBCRYPT_LIBS="-lcrypt"
 }
@@ -117,6 +121,14 @@ termux_step_create_debscripts() {
 		echo "== Note: pip is now separate from python =="
 		echo "To install, enter the following command:"
 		echo "   pkg install python-pip"
+		echo
+	fi
+
+	if [ -d $TERMUX_PREFIX/lib/python3.11/site-packages ]; then
+		echo
+		echo "NOTE: The system python package has been updated to 3.12."
+		echo "NOTE: Run 'pkg upgrade' to update system python packages."
+		echo "NOTE: Packages installed using pip needs to be re-installed."
 		echo
 	fi
 
