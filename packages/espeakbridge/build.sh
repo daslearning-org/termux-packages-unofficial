@@ -5,8 +5,8 @@ TERMUX_PKG_DESCRIPTION="espeakbridge.so for Piper text-to-speech engine"
 TERMUX_PKG_LICENSE="GPL-3.0-or-later"
 TERMUX_PKG_MAINTAINER="@daslearning"
 TERMUX_PKG_VERSION=1.3.0
-TERMUX_PKG_DEPENDS="python"
-TERMUX_PKG_BUILD_DEPENDS="python-dev"
+TERMUX_PKG_DEPENDS="python, espeakng"
+TERMUX_PKG_BUILD_DEPENDS="espeakng"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PYTHON_VERSION=3.11
 TERMUX_PREFIX=/data/data/com.termux/files/usr
@@ -43,13 +43,13 @@ termux_step_pre_configure() {
         echo "Error: Failed to copy espeakbridge.c from $PACKAGE_DIR"
         exit 1
     }
-    cp "$PACKAGE_DIR/speak_lib.h" "$TERMUX_PKG_SRCDIR/" || {
-        echo "Error: Failed to copy speak_lib.h from $PACKAGE_DIR"
+    cp "$TERMUX_PREFIX/include/espeak-ng/speak_lib.h" "$TERMUX_PKG_SRCDIR/" || {
+        echo "Error: Failed to copy speak_lib.h from $TERMUX_PREFIX/include/espeak-ng"
         exit 1
     }
 
     # Compiler and linker flags for Android
-    CPPFLAGS="-DANDROID -I${TERMUX_PKG_SRCDIR} -I${NDK_SYSROOT}/usr/include -I${TERMUX_PREFIX}/include/python${TERMUX_PYTHON_VERSION}"
+    CPPFLAGS="-DANDROID -I${TERMUX_PKG_SRCDIR} -I${NDK_SYSROOT}/usr/include -I${TERMUX_PREFIX}/include/python${TERMUX_PYTHON_VERSION} -I${TERMUX_PREFIX}/include/espeak-ng"
     CFLAGS="-Wno-unused-variable -fPIC --target=aarch64-linux-android28 -D_GNU_SOURCE"
     LDFLAGS="-L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} -lespeak-ng -Wl,--verbose"
     export CFLAGS="$CFLAGS $CPPFLAGS"
@@ -97,7 +97,10 @@ termux_step_pre_configure() {
 
     # Check for espeak_TextToPhonemesWithTerminator
     echo "DEBUG: Checking for espeak_TextToPhonemesWithTerminator in libespeak-ng.so:"
-    nm -D $TERMUX_PREFIX/lib/libespeak-ng.so | grep espeak_TextToPhonemesWithTerminator || echo "WARNING: espeak_TextToPhonemesWithTerminator not found"
+    nm -D $TERMUX_PREFIX/lib/libespeak-ng.so | grep espeak_TextToPhonemesWithTerminator || {
+        echo "Error: espeak_TextToPhonemesWithTerminator not found in libespeak-ng.so"
+        exit 1
+    }
 
     # Hardcode Python compiler and linker flags for aarch64
     PYTHON_CFLAGS="-I${TERMUX_PREFIX}/include/python3.11 -DANDROID -D_GNU_SOURCE -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall"
