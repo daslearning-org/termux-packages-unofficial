@@ -5,11 +5,12 @@ TERMUX_PKG_DESCRIPTION="A fast, local neural text-to-speech engine"
 TERMUX_PKG_LICENSE="GPL-3.0-or-later"
 TERMUX_PKG_MAINTAINER="@daslearning"
 TERMUX_PKG_VERSION=1.3.0
+TERMUX_PREFIX="/data/data/com.termux/files/usr"
 TERMUX_PKG_SRCURL=https://github.com/OHF-Voice/piper1-gpl/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
 TERMUX_PKG_SHA256=b27e318dcbbab8563187da0ef00d443e51f4f6462782befbed54c42539aa41ec
-TERMUX_PKG_DEPENDS="espeak-ng"
-TERMUX_PKG_BUILD_DEPENDS="python-onnxruntime"
-TERMUX_PKG_PYTHON_COMMON_DEPS="packaging, scikit-build, cmake, ninja"
+TERMUX_PKG_DEPENDS="numpy, mpmath, sympy"
+TERMUX_PKG_BUILD_DEPENDS="cmake, ninja, python-onnxruntime"
+TERMUX_PKG_PYTHON_COMMON_DEPS="packaging, onnxruntime, scikit-build, cmake, ninja"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_UPDATE_TAG_TYPE="latest-release-tag"
@@ -28,33 +29,39 @@ termux_step_pre_configure() {
 
     # Python paths
     export PYTHON_VERSION="${TERMUX_PYTHON_VERSION}"
-    export PYTHON_EXECUTABLE=$(command -v python3)
+    export PYTHON_EXECUTABLE=$(command -v python3.11 || command -v python3)
     export PYTHON_INCLUDE_DIR=$TERMUX_PREFIX/include/python${PYTHON_VERSION}
     export PYTHON_LIBRARY=$TERMUX_PREFIX/lib/libpython${PYTHON_VERSION}.so
     export PYTHON_NUMPY_INCLUDE_DIR=$TERMUX_PREFIX/lib/python${PYTHON_VERSION}/site-packages/numpy/_core/include
 
-    # CMake arguments for Python, espeak-ng, and onnxruntime
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS=""
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython_EXECUTABLE=${PYTHON_EXECUTABLE}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython_LIBRARY=${PYTHON_LIBRARY}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython3_EXECUTABLE=${PYTHON_EXECUTABLE}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython3_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython3_LIBRARY=${PYTHON_LIBRARY}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DESPEAKNG_INCLUDE_DIR=${TERMUX_PREFIX}/include/espeak-ng"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DESPEAKNG_LIBRARY=${TERMUX_PREFIX}/lib/libespeak-ng.so"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DONNXRUNTIME_DIR=${TERMUX_PREFIX}"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DBUILD_SHARED_LIBS=ON"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DCMAKE_SYSTEM_NAME=Android"
-    TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DCMAKE_SYSTEM_VERSION=${TERMUX_PKG_API_LEVEL:-21}"
+    # Ensure Python 3.11 is used
+    if ! [[ $($PYTHON_EXECUTABLE --version) =~ 3\.11 ]]; then
+        echo "Error: Python 3.11 is required, but $($PYTHON_EXECUTABLE --version) is found."
+        exit 1
+    fi
+
+    # CMake arguments for scikit-build
+    export CMAKE_ARGS=""
+    CMAKE_ARGS+=" -DPython_EXECUTABLE=${PYTHON_EXECUTABLE}"
+    CMAKE_ARGS+=" -DPython_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}"
+    CMAKE_ARGS+=" -DPython_LIBRARY=${PYTHON_LIBRARY}"
+    CMAKE_ARGS+=" -DPython3_EXECUTABLE=${PYTHON_EXECUTABLE}"
+    CMAKE_ARGS+=" -DPython3_INCLUDE_DIR=${PYTHON_INCLUDE_DIR}"
+    CMAKE_ARGS+=" -DPython3_LIBRARY=${PYTHON_LIBRARY}"
+    CMAKE_ARGS+=" -DESPEAKNG_INCLUDE_DIR=${TERMUX_PREFIX}/include/espeak-ng"
+    CMAKE_ARGS+=" -DESPEAKNG_LIBRARY=${TERMUX_PREFIX}/lib/libespeak-ng.so"
+    CMAKE_ARGS+=" -DONNXRUNTIME_DIR=${TERMUX_PREFIX}"
+    CMAKE_ARGS+=" -DBUILD_SHARED_LIBS=ON"
+    CMAKE_ARGS+=" -DCMAKE_SYSTEM_NAME=Android"
+    CMAKE_ARGS+=" -DCMAKE_SYSTEM_VERSION=${TERMUX_PKG_API_LEVEL:-24}"
+    CMAKE_ARGS+=" -DCMAKE_BUILD_TYPE=Release"
+    CMAKE_ARGS+=" -DCMAKE_INSTALL_PREFIX=$TERMUX_PREFIX"
 }
 
 termux_step_make() {
-    # Build using scikit-build
+    # Build using scikit-build with CMAKE_ARGS
     python setup.py build \
-        --build-type Release \
-        --cmake-args \
-        "${TERMUX_PKG_EXTRA_CONFIGURE_ARGS} -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$TERMUX_PREFIX"
+        --build-type Release
 }
 
 termux_step_make_install() {

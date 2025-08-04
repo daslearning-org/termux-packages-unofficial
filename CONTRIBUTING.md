@@ -140,7 +140,7 @@ provides content useful for average Termux user.
 Packages that require root permission to get working or rely on features that
 are available only with SELinux permissive mode or require custom firmware
 are handled in a dedicated
-[apt repository](https://packages-cf.termux.dev/apt/termux-root/) whose build
+[apt repository](https://packages.termux.dev/apt/termux-root/) whose build
 recipes you can find in [root-packages directory](/root-packages).
 Remember that Termux is designed primarily for non-root use and we may
 remove functionality requiring root from packages if it interfere with
