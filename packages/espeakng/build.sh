@@ -7,7 +7,7 @@ TERMUX_PKG_MAINTAINER="@daslearning"
 _COMMIT=a4ca101c99de35345f89df58195b2159748b7092
 TERMUX_PKG_VERSION=0.0.1-beta1
 TERMUX_PKG_SRCURL=https://github.com/daslearning-org/termux-packages-unofficial/releases/download/espeak-ng-beta1/espeak-ng-0.0.1-beta1.tar.gz
-TERMUX_PKG_SHA256=sha256:3e4dab133cfd8bbf0b2c4abe9c183e38ad037479a480810b448a8de32cc08d85
+TERMUX_PKG_SHA256=3e4dab133cfd8bbf0b2c4abe9c183e38ad037479a480810b448a8de32cc08d85
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_DEPENDS="libc++"
 TERMUX_PKG_BREAKS="espeak-dev"
@@ -18,25 +18,15 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async -
 TERMUX_PREFIX=/data/data/com.termux/files/usr
 
 termux_step_post_get_source() {
-    # Certain packages are not safe to build on device
     if ${TERMUX_ON_DEVICE_BUILD}; then
         termux_error_exit "Package '${TERMUX_PKG_NAME}' is not safe for on-device builds."
     fi
 
-    # SOVERSION guard
     local _SOVERSION=1
-    local e=$(sed -En 's/^SHARED_VERSION="?([0-9]+):([0-9]+):([0-9]+).*/\1-\3/p' \
-                Makefile.am)
+    local e=$(sed -En 's/^SHARED_VERSION="?([0-9]+):([0-9]+):([0-9]+).*/\1-\3/p' Makefile.am)
     if [ ! "${e}" ] || [ "${_SOVERSION}" != "$(( "${e}" ))" ]; then
         termux_error_exit "SOVERSION guard check failed."
     fi
-
-    # Apply stderr patch (not required as I have manually patched it)
-    #echo "DEBUG: Applying stderr patch to src/libespeak-ng"
-    #patch -p1 < $TERMUX_PKG_BUILDER_DIR/espeakng_stderr_patch.diff || {
-    #    echo "Error: Failed to apply stderr patch"
-    #    exit 1
-    #}
 
     ./autogen.sh || {
         echo "Error: autogen.sh failed"
@@ -62,15 +52,17 @@ termux_step_pre_configure() {
     echo "DEBUG: NDK_LIB=$NDK_LIB"
     echo "DEBUG: NDK_BIN=$NDK_BIN"
     echo "DEBUG: Files in NDK_LIB:"
-    ls -l $NDK_LIB
+    ls -l "$NDK_LIB"
+    echo "DEBUG: Checking for android/log.h:"
+    ls -l "$NDK_SYSROOT/usr/include/android/log.h"
 
     # Use NDK's clang
     export CC=$NDK_BIN/aarch64-linux-android28-clang
     export CXX=$NDK_BIN/aarch64-linux-android28-clang++
 
     # Configure flags for static library
-    CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
-    CXXFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
+    CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os -I$NDK_SYSROOT/usr/include"
+    CXXFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os -I$NDK_SYSROOT/usr/include"
     LDFLAGS="-L${NDK_LIB} -llog -landroid -lc++ -lc"
     export CFLAGS="$CFLAGS"
     export CXXFLAGS="$CXXFLAGS"
@@ -85,16 +77,14 @@ termux_step_pre_configure() {
 
     # Check disk space
     echo "DEBUG: Disk space in $TERMUX_PKG_SRCDIR:"
-    df -h $TERMUX_PKG_SRCDIR
+    df -h "$TERMUX_PKG_SRCDIR"
 }
 
 termux_step_make() {
-    # Build only the static library
     make -B src/libespeak-ng.la || {
         echo "Error: make failed"
         exit 1
     }
-    # Extract libespeak-ng.a from .libs directory
     mv src/.libs/libespeak-ng.a src/libespeak-ng.a || {
         echo "Error: Failed to move libespeak-ng.a"
         exit 1
@@ -102,7 +92,6 @@ termux_step_make() {
 }
 
 termux_step_make_install() {
-    # Install static library and headers
     install -Dm644 src/libespeak-ng.a $TERMUX_PREFIX/lib/libespeak-ng.a || {
         echo "Error: Failed to install libespeak-ng.a"
         exit 1
@@ -119,14 +108,12 @@ termux_step_make_install() {
         echo "Error: Failed to install espeak-ng.pc"
         exit 1
     }
-    # Install espeak-ng-data
     rm -rf $TERMUX_PREFIX/share/espeak-ng-data
     mkdir -p $TERMUX_PREFIX/share/espeak-ng-data
     cp -prf espeak-ng-data/* $TERMUX_PREFIX/share/espeak-ng-data || {
         echo "Error: Failed to install espeak-ng-data"
         exit 1
     }
-    # Verify installation
     echo "DEBUG: Verifying installed libespeak-ng.a:"
     ls -l $TERMUX_PREFIX/lib/libespeak-ng.a
     echo "DEBUG: Verifying installed speak_lib.h:"
