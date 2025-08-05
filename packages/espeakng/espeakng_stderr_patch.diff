@@ -1,0 +1,228 @@
+--- a/src/src/libespeak-ng/spect.c
++++ b/src/src/libespeak-ng/spect.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/speak_lib.h>
+ 
+@@ -XX,XX +XX,XX @@
+-	fprintf(stderr, "Failed to open: '%s'", filename);
++	__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Failed to open: '%s'", filename);
+-	fprintf(stderr, "Unsupported spectral file format.\n");
++	__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Unsupported spectral file format");
+
+--- a/src/src/libespeak-ng/dictionary.c
++++ b/src/src/libespeak-ng/dictionary.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/dictionary.h>
+ 
+@@ -XX,XX +XX,XX @@
+-			fprintf(stderr, "Bad rules data in '%s_dict' at 0x%x (%c)\n", dictionary_name, (unsigned int)(p - tr->data_dictrules), *p);
++			__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Bad rules data in '%s_dict' at 0x%x (%c)", dictionary_name, (unsigned int)(p - tr->data_dictrules), *p);
+-			fprintf(stderr, "Can't read dictionary file: '%s'\n", fname);
++			__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Can't read dictionary file: '%s'", fname);
+-		fprintf(stderr, "Empty _dict file: '%s\n", fname);
++		__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Empty _dict file: '%s'", fname);
+-		fprintf(stderr, "Bad data: '%s' (%x length=%x)\n", fname, Reverse4Bytes(pw[0]), length);
++		__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Bad data: '%s' (%x length=%x)", fname, Reverse4Bytes(pw[0]), length);
+-		fprintf(stderr, "Full dictionary is not installed for '%s'\n", name);
++		__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Full dictionary is not installed for '%s'", name);
+
+--- a/src/src/libespeak-ng/compiledata.c
++++ b/src/src/libespeak-ng/compiledata.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/compiledata.h>
+ 
+@@ -XX,XX +XX,XX @@
+-	if (!log) log = stderr;
++	if (!log) log = NULL; // Disable stderr logging
+-		ctx->f_phcontents = stderr;
++		ctx->f_phcontents = NULL; // Disable stderr logging
+-	if (ctx->f_errors != stderr && ctx->f_errors != stdout)
++	if (ctx->f_errors != NULL && ctx->f_errors != stdout)
+-	if (!log) log = stderr;
++	if (!log) log = NULL; // Disable stderr logging
+
+--- a/src/src/libespeak-ng/compilembrola.c
++++ b/src/src/libespeak-ng/compilembrola.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/compilembrola.h>
+ 
+@@ -XX,XX +XX,XX @@
+-	if (!log) log = stderr;
++	if (!log) log = NULL; // Disable stderr logging
+
+--- a/src/src/libespeak-ng/setlengths.c
++++ b/src/src/libespeak-ng/setlengths.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/setlengths.h>
+ 
+@@ -XX,XX +XX,XX @@
+-				fprintf(stderr, "espeak: Bad intonation data\n");
++				__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Bad intonation data");
+
+--- a/src/src/libespeak-ng/speech.c
++++ b/src/src/libespeak-ng/speech.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/speech.h>
+ 
+@@ -XX,XX +XX,XX @@
+-					fprintf(stderr, "error: %s\n", audio_object_strerror(my_audio, error));
++					__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "error: %s", audio_object_strerror(my_audio, error));
+-				fprintf(stderr, "error: %s\n", audio_object_strerror(my_audio, error));
++				__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "error: %s", audio_object_strerror(my_audio, error));
+-				fprintf(stderr, "error: %s\n", audio_object_strerror(my_audio, error));
++				__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "error: %s", audio_object_strerror(my_audio, error));
+-			fprintf(stderr, "error: %s\n", audio_object_strerror(my_audio, error));
++			__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "error: %s", audio_object_strerror(my_audio, error));
+-		f_trans = stderr;
++		f_trans = NULL; // Disable stderr logging
+
+--- a/src/src/libespeak-ng/synthdata.c
++++ b/src/src/libespeak-ng/synthdata.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/synthdata.h>
+ 
+@@ -XX,XX +XX,XX @@
+-		fprintf(stderr, "espeak: No envelope\n");
++		__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "No envelope");
+-	fprintf(stderr, "Invalid instruction %.4x for phoneme '%s'\n", instn, WordToString(buf, ph->mnemonic));
++	__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Invalid instruction %.4x for phoneme '%s'", instn, WordToString(buf, ph->mnemonic));
+
+--- a/src/src/libespeak-ng/compiledict.c
++++ b/src/src/libespeak-ng/compiledict.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/compiledict.h>
+ 
+@@ -XX,XX +XX,XX @@
+-						fprintf(stderr, "\nExceeded limit of rules (%d) in group '%s'\n", N_RULES, ctx->group_name);
++						__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Exceeded limit of rules (%d) in group '%s'", N_RULES, ctx->group_name);
+-	if (!log) log = stderr;
++	if (!log) log = NULL; // Disable stderr logging
+-		ctx->f_log = stderr;
++		ctx->f_log = NULL; // Disable stderr logging
+
+--- a/src/src/libespeak-ng/espeak_api.c
++++ b/src/src/libespeak-ng/espeak_api.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/speak_lib.h>
+ 
+@@ -XX,XX +XX,XX @@
+-		espeak_ng_PrintStatusCodeMessage(result, stderr, context);
++		// espeak_ng_PrintStatusCodeMessage(result, stderr, context); // Handled internally or logged elsewhere
+-		espeak_ng_PrintStatusCodeMessage(result, stderr, context);
++		// espeak_ng_PrintStatusCodeMessage(result, stderr, context); // Handled internally or logged elsewhere
+
+--- a/src/src/libespeak-ng/synth_mbrola.c
++++ b/src/src/libespeak-ng/synth_mbrola.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/synth_mbrola.h>
+ 
+@@ -XX,XX +XX,XX @@
+-		fprintf(stderr, "Cannot find MBROLA voice file '%s' in neither of paths:\n"
++		__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Cannot find MBROLA voice file '%s' in neither of paths:", voice_name);
+
+--- a/src/src/libespeak-ng/mbrowrap.c
++++ b/src/src/libespeak-ng/mbrowrap.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/mbrowrap.h>
+ 
++static void log_mbr_error(const char *msg) {
++	__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "mbrowrap: %s", msg);
++}
++
+@@ -XX,XX +XX,XX @@
+-	fprintf(stderr, "mbrowrap error: %s\n", mbr_errorbuf);
++	log_mbr_error(mbr_errorbuf);
+-	int error, p_stdin[2], p_stdout[2], p_stderr[2];
++	int error, p_stdin[2], p_stdout[2], p_log[2];
+-	error = create_pipes(p_stdin, p_stdout, p_stderr);
++	error = create_pipes(p_stdin, p_stdout, p_log);
+-		close_pipes(p_stdin, p_stdout, p_stderr);
++		close_pipes(p_stdin, p_stdout, p_log);
+-		    dup2(p_stderr[1], 2) == -1) {
++		    dup2(p_log[1], 2) == -1) {
+-			written = write(p_stderr[1], mbr_errorbuf, strlen(mbr_errorbuf));
++			written = write(p_log[1], mbr_errorbuf, strlen(mbr_errorbuf));
+-		for (i = p_stderr[1]; i > 2; i--)
++		for (i = p_log[1]; i > 2; i--)
+-		close_pipes(p_stdin, p_stdout, p_stderr);
++		close_pipes(p_stdin, p_stdout, p_log);
+-	    fcntl(p_stderr[0], F_SETFL, O_NONBLOCK) == -1) {
++	    fcntl(p_log[0], F_SETFL, O_NONBLOCK) == -1) {
+-		close_pipes(p_stdin, p_stdout, p_stderr);
++		close_pipes(p_stdin, p_stdout, p_log);
+-	mbr_error_fd = p_stderr[0];
++	mbr_error_fd = p_log[0];
+-	close(p_stderr[1]);
++	close(p_log[1]);
+-		msg = "mbrola closed stderr and did not exit";
++		msg = "mbrola closed log and did not exit";
+-	fprintf(stderr, "mbrowrap error: %s\n", msg);
++	log_mbr_error(msg);
+-				fprintf(stderr,
++				log_mbr_error(buf_ptr);
+-				fprintf(stderr, "mbrola: %s\n", buf_ptr);
++				log_mbr_error(buf_ptr);
+
+--- a/src/src/libespeak-ng/langopts.c
++++ b/src/src/libespeak-ng/langopts.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/langopts.h>
+ 
+@@ -XX,XX +XX,XX @@
+-							fprintf(stderr, "numbers: Bad option number %d\n", n);
++							__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "numbers: Bad option number %d", n);
+-                        fprintf(stderr, "Unknown tune '%s'\n", names[ix]);
++                        __android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Unknown tune '%s'", names[ix]);
+-	fprintf(stderr, "Cannot set %s: language not set, or is invalid.\n", LookupMnemName(keyword_tab, key));
++	__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Cannot set %s: language not set, or is invalid.", LookupMnemName(keyword_tab, key));
+
+--- a/src/src/libespeak-ng/voices.c
++++ b/src/src/libespeak-ng/voices.c
+@@ -1,4 +1,5 @@
+ #include <stdio.h>
++#include <android/log.h>
+ #include <espeak-ng/voices.h>
+ 
+@@ -XX,XX +XX,XX @@
+-				fprintf(stderr, "Error (%s): gender attribute specified on a language file\n", fname);
++				__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Error (%s): gender attribute specified on a language file", fname);
+-				fprintf(stderr, "%s: Bad option number %d\n", LookupMnemName(keyword_tab, key), n);
++				__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "%s: Bad option number %d", LookupMnemName(keyword_tab, key), n);
+-                    espeak_ng_PrintStatusCodeMessage(status, stderr, NULL);
++                    // espeak_ng_PrintStatusCodeMessage(status, stderr, NULL); // Handled internally or logged elsewhere
+-                fprintf(stderr, "espeak-ng was built without mbrola support\n");
++                __android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "espeak-ng was built without mbrola support");
+-                fprintf(stderr, "espeak-ng was built without klatt support\n");
++                __android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "espeak-ng was built without klatt support");
+-                fprintf(stderr, "Bad voice attribute: %s\n", buf);
++                __android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Bad voice attribute: %s", buf);
+-			fprintf(stderr, "Unknown phoneme table: '%s'\n", phonemes_name);
++			__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Unknown phoneme table: '%s'", phonemes_name);
+-			fprintf(stderr, "Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached\n", n_voices_list + 1, N_VOICES_LIST);
++			__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached", n_voices_list + 1, N_VOICES_LIST);
+-			fprintf(stderr, "Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached\n", n_voices_list + 1, N_VOICES_LIST);
++			__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Warning: maximum number %d of (N_VOICES_LIST = %d - 1) reached", n_voices_list + 1, N_VOICES_LIST);

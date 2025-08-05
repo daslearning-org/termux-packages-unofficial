@@ -31,6 +31,17 @@ termux_step_post_get_source() {
         termux_error_exit "SOVERSION guard check failed."
     fi
 
+    # Apply stderr patch
+    cp "$PACKAGE_DIR/espeakng_stderr_patch.diff" "$TERMUX_PKG_BUILDER_DIR/" || {
+        echo "Error: Failed to copy espeakng_stderr_patch.diff from $PACKAGE_DIR"
+        exit 1
+    }
+    echo "DEBUG: Applying stderr patch to src/libespeak-ng"
+    patch -p1 < $TERMUX_PKG_BUILDER_DIR/espeakng_stderr_patch.diff || {
+        echo "Error: Failed to apply stderr patch"
+        exit 1
+    }
+
     ./autogen.sh || {
         echo "Error: autogen.sh failed"
         exit 1

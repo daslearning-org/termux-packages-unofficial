@@ -38,6 +38,9 @@ ls -l $TERMUX_PREFIX/include/espeak-ng/speak_lib.h
 nm $TERMUX_PREFIX/lib/libespeak-ng.a | grep espeak_TextToPhonemesWithTerminator
 file $TERMUX_PREFIX/lib/libespeak-ng.a
 ls -l $TERMUX_PREFIX/share/espeak-ng-data
+
+cd $HOME/.termux-build/espeakng/
+grep -r "stderr" src/src/libespeak-ng
 ```
 
 ### espeakbridge for piper
