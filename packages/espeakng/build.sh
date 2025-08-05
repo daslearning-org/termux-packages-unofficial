@@ -5,25 +5,28 @@ TERMUX_PKG_DESCRIPTION="Custom eSpeak NG for Piper text-to-speech with additiona
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@daslearning"
 _COMMIT=a4ca101c99de35345f89df58195b2159748b7092
-TERMUX_PKG_VERSION=0.0.1-beta2
-TERMUX_PKG_SRCURL=https://github.com/daslearning-org/termux-packages-unofficial/releases/download/espeak-ng-beta2/espeak-ng-0.0.1-beta2.tar.gz
-TERMUX_PKG_SHA256=2db4b189059c3698bf72a0408fb0d5b87f9f4d62961ca6815f359f130e5e6fb0
+TERMUX_PKG_VERSION=0.0.0-${_COMMIT:0:7}
+TERMUX_PKG_SRCURL=https://github.com/espeak-ng/espeak-ng/archive/${_COMMIT}.tar.gz
+TERMUX_PKG_SHA256=c8ed6647d2ebba13015f397eede400262ec02710856d6d08d5a27528765d0be0
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_DEPENDS="libc++"
 TERMUX_PKG_BREAKS="espeak-dev"
 TERMUX_PKG_REPLACES="espeak-dev"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_HOSTBUILD=true
-TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async --without-pcaudiolib --host=aarch64-linux-android"
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async --without-pcaudiolib"
 TERMUX_PREFIX=/data/data/com.termux/files/usr
 
 termux_step_post_get_source() {
+    # Certain packages are not safe to build on device
     if ${TERMUX_ON_DEVICE_BUILD}; then
         termux_error_exit "Package '${TERMUX_PKG_NAME}' is not safe for on-device builds."
     fi
 
+    # SOVERSION guard
     local _SOVERSION=1
-    local e=$(sed -En 's/^SHARED_VERSION="?([0-9]+):([0-9]+):([0-9]+).*/\1-\3/p' Makefile.am)
+    local e=$(sed -En 's/^SHARED_VERSION="?([0-9]+):([0-9]+):([0-9]+).*/\1-\3/p' \
+                Makefile.am)
     if [ ! "${e}" ] || [ "${_SOVERSION}" != "$(( "${e}" ))" ]; then
         termux_error_exit "SOVERSION guard check failed."
     fi
@@ -52,7 +55,7 @@ termux_step_pre_configure() {
     echo "DEBUG: NDK_LIB=$NDK_LIB"
     echo "DEBUG: NDK_BIN=$NDK_BIN"
     echo "DEBUG: Files in NDK_LIB:"
-    ls -l "$NDK_LIB"
+    ls -l $NDK_LIB
 
     # Use NDK's clang
     export CC=$NDK_BIN/aarch64-linux-android28-clang
@@ -61,7 +64,7 @@ termux_step_pre_configure() {
     # Configure flags for static library
     CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
     CXXFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
-    LDFLAGS="-L${NDK_LIB} -lc++ -lc"
+    LDFLAGS="-L${NDK_LIB} -llog -landroid -lc++ -lc"
     export CFLAGS="$CFLAGS"
     export CXXFLAGS="$CXXFLAGS"
     export LDFLAGS="$LDFLAGS"
@@ -75,24 +78,16 @@ termux_step_pre_configure() {
 
     # Check disk space
     echo "DEBUG: Disk space in $TERMUX_PKG_SRCDIR:"
-    df -h "$TERMUX_PKG_SRCDIR"
-
-    # Ensure configure uses cross-compiler and flags
-    export CONFIGURE_ARGS="--host=aarch64-linux-android --disable-shared --enable-static --with-async --without-pcaudiolib"
-}
-
-termux_step_configure() {
-    ./configure $CONFIGURE_ARGS CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" || {
-        echo "Error: configure failed"
-        exit 1
-    }
+    df -h $TERMUX_PKG_SRCDIR
 }
 
 termux_step_make() {
+    # Build only the static library
     make -B src/libespeak-ng.la || {
         echo "Error: make failed"
         exit 1
     }
+    # Extract libespeak-ng.a from .libs directory
     mv src/.libs/libespeak-ng.a src/libespeak-ng.a || {
         echo "Error: Failed to move libespeak-ng.a"
         exit 1
@@ -100,6 +95,7 @@ termux_step_make() {
 }
 
 termux_step_make_install() {
+    # Install static library and headers
     install -Dm644 src/libespeak-ng.a $TERMUX_PREFIX/lib/libespeak-ng.a || {
         echo "Error: Failed to install libespeak-ng.a"
         exit 1
@@ -116,12 +112,14 @@ termux_step_make_install() {
         echo "Error: Failed to install espeak-ng.pc"
         exit 1
     }
+    # Install espeak-ng-data
     rm -rf $TERMUX_PREFIX/share/espeak-ng-data
     mkdir -p $TERMUX_PREFIX/share/espeak-ng-data
     cp -prf espeak-ng-data/* $TERMUX_PREFIX/share/espeak-ng-data || {
         echo "Error: Failed to install espeak-ng-data"
         exit 1
     }
+    # Verify installation
     echo "DEBUG: Verifying installed libespeak-ng.a:"
     ls -l $TERMUX_PREFIX/lib/libespeak-ng.a
     echo "DEBUG: Verifying installed speak_lib.h:"
