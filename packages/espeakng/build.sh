@@ -63,14 +63,17 @@ termux_step_pre_configure() {
 
     # Configure flags for static library
     CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
+    CXXFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
     LDFLAGS="-L${NDK_LIB} -llog -landroid -lc++ -lc"
     export CFLAGS="$CFLAGS"
+    export CXXFLAGS="$CXXFLAGS"
     export LDFLAGS="$LDFLAGS"
 
     # Debug flags
     echo "DEBUG: CC=$CC"
     echo "DEBUG: CXX=$CXX"
     echo "DEBUG: CFLAGS=$CFLAGS"
+    echo "DEBUG: CXXFLAGS=$CXXFLAGS"
     echo "DEBUG: LDFLAGS=$LDFLAGS"
 
     # Check disk space
