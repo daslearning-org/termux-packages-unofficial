@@ -5,16 +5,16 @@ TERMUX_PKG_DESCRIPTION="Custom eSpeak NG for Piper text-to-speech with additiona
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@daslearning"
 _COMMIT=a4ca101c99de35345f89df58195b2159748b7092
-TERMUX_PKG_VERSION=0.0.1-beta1
-TERMUX_PKG_SRCURL=https://github.com/daslearning-org/termux-packages-unofficial/releases/download/espeak-ng-beta1/espeak-ng-0.0.1-beta1.tar.gz
-TERMUX_PKG_SHA256=3e4dab133cfd8bbf0b2c4abe9c183e38ad037479a480810b448a8de32cc08d85
+TERMUX_PKG_VERSION=0.0.1-beta2
+TERMUX_PKG_SRCURL=https://github.com/daslearning-org/termux-packages-unofficial/releases/download/espeak-ng-beta2/espeak-ng-0.0.1-beta2.tar.gz
+TERMUX_PKG_SHA256=2db4b189059c3698bf72a0408fb0d5b87f9f4d62961ca6815f359f130e5e6fb0
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_DEPENDS="libc++"
 TERMUX_PKG_BREAKS="espeak-dev"
 TERMUX_PKG_REPLACES="espeak-dev"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_HOSTBUILD=true
-TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async --without-pcaudiolib"
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--disable-shared --enable-static --with-async --without-pcaudiolib --host=aarch64-linux-android"
 TERMUX_PREFIX=/data/data/com.termux/files/usr
 
 termux_step_post_get_source() {
@@ -53,17 +53,15 @@ termux_step_pre_configure() {
     echo "DEBUG: NDK_BIN=$NDK_BIN"
     echo "DEBUG: Files in NDK_LIB:"
     ls -l "$NDK_LIB"
-    echo "DEBUG: Checking for android/log.h:"
-    ls -l "$NDK_SYSROOT/usr/include/android/log.h"
 
     # Use NDK's clang
     export CC=$NDK_BIN/aarch64-linux-android28-clang
     export CXX=$NDK_BIN/aarch64-linux-android28-clang++
 
     # Configure flags for static library
-    CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os -I$NDK_SYSROOT/usr/include"
-    CXXFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os -I$NDK_SYSROOT/usr/include"
-    LDFLAGS="-L${NDK_LIB} -llog -landroid -lc++ -lc"
+    CFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
+    CXXFLAGS="--target=aarch64-linux-android28 -DANDROID -fPIC -g -Os"
+    LDFLAGS="-L${NDK_LIB} -lc++ -lc"
     export CFLAGS="$CFLAGS"
     export CXXFLAGS="$CXXFLAGS"
     export LDFLAGS="$LDFLAGS"
@@ -78,6 +76,16 @@ termux_step_pre_configure() {
     # Check disk space
     echo "DEBUG: Disk space in $TERMUX_PKG_SRCDIR:"
     df -h "$TERMUX_PKG_SRCDIR"
+
+    # Ensure configure uses cross-compiler and flags
+    export CONFIGURE_ARGS="--host=aarch64-linux-android --disable-shared --enable-static --with-async --without-pcaudiolib"
+}
+
+termux_step_configure() {
+    ./configure $CONFIGURE_ARGS CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" LDFLAGS="$LDFLAGS" || {
+        echo "Error: configure failed"
+        exit 1
+    }
 }
 
 termux_step_make() {
