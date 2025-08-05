@@ -1,6 +1,7 @@
 // Partially written by ChatGPT 2025-Jul-09
 
 #define Py_LIMITED_API 0x03090000
+#include <stdio.h>
 #include <Python.h>
 //#include <espeak-ng/speak_lib.h>
 #include "speak_lib.h"

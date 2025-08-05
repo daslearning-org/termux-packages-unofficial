@@ -129,4 +129,6 @@ termux_step_make_install() {
         echo "Error: espeak_TextToPhonemesWithTerminator not found in libespeak-ng.a"
         exit 1
     }
+    echo "DEBUG: Checking for stderr in libespeak-ng.a:"
+    nm $TERMUX_PREFIX/lib/libespeak-ng.a | grep stderr || echo "No stderr references found in libespeak-ng.a"
 }

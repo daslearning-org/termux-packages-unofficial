@@ -51,7 +51,7 @@ termux_step_pre_configure() {
     # Compiler and linker flags for Android
     CPPFLAGS="-DANDROID -I${TERMUX_PKG_SRCDIR} -I${NDK_SYSROOT}/usr/include -I${TERMUX_PREFIX}/include/python${TERMUX_PYTHON_VERSION} -I${TERMUX_PREFIX}/include/espeak-ng"
     CFLAGS="-Wno-unused-variable -fPIC --target=aarch64-linux-android28 -D_GNU_SOURCE"
-    LDFLAGS="-L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} $TERMUX_PREFIX/lib/libespeak-ng.a -Wl,--verbose"
+    LDFLAGS="-L${NDK_LIB} -llog -landroid -L${TERMUX_PREFIX}/lib -lpython${TERMUX_PYTHON_VERSION} $TERMUX_PREFIX/lib/libespeak-ng.a -lc -Wl,--verbose"
     export CFLAGS="$CFLAGS $CPPFLAGS"
     export LDFLAGS="$LDFLAGS"
 
@@ -102,9 +102,13 @@ termux_step_pre_configure() {
         exit 1
     }
 
+    # Check for stderr in libespeak-ng.a
+    echo "DEBUG: Checking for stderr in libespeak-ng.a:"
+    nm $TERMUX_PREFIX/lib/libespeak-ng.a | grep stderr || echo "No stderr references found in libespeak-ng.a"
+
     # Hardcode Python compiler and linker flags for aarch64
     PYTHON_CFLAGS="-I${TERMUX_PREFIX}/include/python3.11 -DANDROID -D_GNU_SOURCE -fno-strict-aliasing -DNDEBUG -g -fwrapv -O2 -Wall"
-    PYTHON_LDFLAGS="-L${TERMUX_PREFIX}/lib -lpython3.11 -ldl -lm"
+    PYTHON_LDFLAGS="-L${TERMUX_PREFIX}/lib -lpython3.11 -ldl -lm -lc"
     export CFLAGS="$CFLAGS $PYTHON_CFLAGS"
     export LDFLAGS="$LDFLAGS $PYTHON_LDFLAGS"
 
