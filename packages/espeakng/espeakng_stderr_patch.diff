@@ -4,7 +4,7 @@
  #include <stdio.h>
 +#include <android/log.h>
  #include <espeak-ng/speak_lib.h>
- 
+
 @@ -XX,XX +XX,XX @@
 -	fprintf(stderr, "Failed to open: '%s'", filename);
 +	__android_log_print(ANDROID_LOG_ERROR, "espeak-ng", "Failed to open: '%s'", filename);

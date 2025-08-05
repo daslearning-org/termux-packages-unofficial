@@ -5,9 +5,9 @@ TERMUX_PKG_DESCRIPTION="Custom eSpeak NG for Piper text-to-speech with additiona
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@daslearning"
 _COMMIT=a4ca101c99de35345f89df58195b2159748b7092
-TERMUX_PKG_VERSION=0.0.0-${_COMMIT:0:7}
-TERMUX_PKG_SRCURL=https://github.com/espeak-ng/espeak-ng/archive/${_COMMIT}.tar.gz
-TERMUX_PKG_SHA256=c8ed6647d2ebba13015f397eede400262ec02710856d6d08d5a27528765d0be0
+TERMUX_PKG_VERSION=0.0.1-beta1
+TERMUX_PKG_SRCURL=https://github.com/daslearning-org/termux-packages-unofficial/releases/download/espeak-ng-beta1/espeak-ng-0.0.1-beta1.tar.gz
+TERMUX_PKG_SHA256=sha256:3e4dab133cfd8bbf0b2c4abe9c183e38ad037479a480810b448a8de32cc08d85
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_DEPENDS="libc++"
 TERMUX_PKG_BREAKS="espeak-dev"
@@ -31,16 +31,12 @@ termux_step_post_get_source() {
         termux_error_exit "SOVERSION guard check failed."
     fi
 
-    # Apply stderr patch
-    cp "$PACKAGE_DIR/espeakng_stderr_patch.diff" "$TERMUX_PKG_BUILDER_DIR/" || {
-        echo "Error: Failed to copy espeakng_stderr_patch.diff from $PACKAGE_DIR"
-        exit 1
-    }
-    echo "DEBUG: Applying stderr patch to src/libespeak-ng"
-    patch -p1 < $TERMUX_PKG_BUILDER_DIR/espeakng_stderr_patch.diff || {
-        echo "Error: Failed to apply stderr patch"
-        exit 1
-    }
+    # Apply stderr patch (not required as I have manually patched it)
+    #echo "DEBUG: Applying stderr patch to src/libespeak-ng"
+    #patch -p1 < $TERMUX_PKG_BUILDER_DIR/espeakng_stderr_patch.diff || {
+    #    echo "Error: Failed to apply stderr patch"
+    #    exit 1
+    #}
 
     ./autogen.sh || {
         echo "Error: autogen.sh failed"
