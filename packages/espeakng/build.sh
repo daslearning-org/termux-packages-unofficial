@@ -5,9 +5,9 @@ TERMUX_PKG_DESCRIPTION="Custom eSpeak NG for Piper text-to-speech with additiona
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@daslearning"
 _COMMIT=a4ca101c99de35345f89df58195b2159748b7092
-TERMUX_PKG_VERSION=0.0.0-${_COMMIT:0:7}
-TERMUX_PKG_SRCURL=https://github.com/espeak-ng/espeak-ng/archive/${_COMMIT}.tar.gz
-TERMUX_PKG_SHA256=c8ed6647d2ebba13015f397eede400262ec02710856d6d08d5a27528765d0be0
+TERMUX_PKG_VERSION=0.0.1-beta3
+TERMUX_PKG_SRCURL=https://github.com/daslearning-org/termux-packages-unofficial/releases/download/espeak-ng-beta2/espeak-ng-0.0.1-beta3.tar.gz
+TERMUX_PKG_SHA256=78419ce47bb4a7d23546884a74c9d13d741f3aecc1b1c49d01e3bd9662810226
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_DEPENDS="libc++"
 TERMUX_PKG_BREAKS="espeak-dev"
@@ -129,6 +129,4 @@ termux_step_make_install() {
         echo "Error: espeak_TextToPhonemesWithTerminator not found in libespeak-ng.a"
         exit 1
     }
-    echo "DEBUG: Checking for stderr in libespeak-ng.a:"
-    nm $TERMUX_PREFIX/lib/libespeak-ng.a | grep stderr || echo "No stderr references found in libespeak-ng.a"
 }
