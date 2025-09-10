@@ -2,8 +2,20 @@ TERMUX_PKG_HOMEPAGE=https://openzim.org
 TERMUX_PKG_DESCRIPTION="The ZIM library is the reference implementation for the ZIM file format."
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="8.0.0"
+TERMUX_PKG_VERSION="9.2.2"
 TERMUX_PKG_SRCURL=https://github.com/openzim/libzim/archive/$TERMUX_PKG_VERSION.tar.gz
-TERMUX_PKG_SHA256=a408810c9316b56b410f6878a488f7d821c9b7eb3983e0114a4ab1a50394f7d2
-TERMUX_PKG_DEPENDS="zstd, libuuid, zlib, libicu, liblzma, libxapian, googletest"
+TERMUX_PKG_SHA256=458d89638606eeabaad5098b0ede7a76396cbcb6c13fb2413afee601b5c1e0c6
 TERMUX_PKG_AUTO_UPDATE=true
+TERMUX_PKG_DEPENDS="libc++, libicu, liblzma, libxapian, zstd"
+TERMUX_PKG_BUILD_DEPENDS="googletest, libuuid"
+
+termux_step_post_get_source() {
+	# Do not forget to bump revision of reverse dependencies and rebuild them
+	# after SOVERSION is changed.
+	local _SOVERSION=9
+
+	local v=$(echo ${TERMUX_PKG_VERSION#*:} | cut -d . -f 1)
+	if [ "${v}" != "${_SOVERSION}" ]; then
+		termux_error_exit "SOVERSION guard check failed."
+	fi
+}

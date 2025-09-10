@@ -2,13 +2,16 @@ TERMUX_PKG_HOMEPAGE="https://www.cups.org/"
 TERMUX_PKG_DESCRIPTION="Common UNIX Printing System"
 TERMUX_PKG_LICENSE="Apache-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="2.3.3"
-TERMUX_PKG_REVISION=10
-TERMUX_PKG_SRCURL="https://github.com/apple/cups/releases/download/v${TERMUX_PKG_VERSION}/cups-${TERMUX_PKG_VERSION}-source.tar.gz"
-TERMUX_PKG_SHA256="261fd948bce8647b6d5cb2a1784f0c24cc52b5c4e827b71d726020bcc502f3ee"
-TERMUX_PKG_DEPENDS="libc++, libiconv, libcrypt, gnutls"
+TERMUX_PKG_VERSION="2.4.10"
+TERMUX_PKG_SRCURL=https://github.com/OpenPrinting/cups/releases/download/v${TERMUX_PKG_VERSION}/cups-${TERMUX_PKG_VERSION}-source.tar.gz
+TERMUX_PKG_SHA256=d75757c2bc0f7a28b02ee4d52ca9e4b1aa1ba2affe16b985854f5336940e5ad7
+TERMUX_PKG_AUTO_UPDATE=true
+TERMUX_PKG_DEPENDS="libc++, libcrypt, libgnutls, libiconv, zlib"
+TERMUX_PKG_BUILD_DEPENDS="libandroid-spawn"
 TERMUX_PKG_BUILD_IN_SRC=true
-
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
+--with-tls=gnutls
+"
 TERMUX_PKG_CONFFILES="
 etc/cups/cups-files.conf
 etc/cups/cupsd.conf

@@ -1,4 +1,4 @@
-TERMUX_PKG_HOMEPAGE=http://pngwriter.sourceforge.net
+TERMUX_PKG_HOMEPAGE=https://pngwriter.sourceforge.net
 TERMUX_PKG_DESCRIPTION="C++ library for creating PNG images"
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
@@ -9,5 +9,5 @@ TERMUX_PKG_DEPENDS="zlib,freetype,libpng"
 TERMUX_PKG_AUTO_UPDATE=true
 
 termux_step_post_make_install() {
-        mv "$TERMUX_PREFIX"/lib/libPNGwriter_shared.so libPNGwriter.so
+	mv "$TERMUX_PREFIX"/lib/libPNGwriter_shared.so libPNGwriter.so
 }

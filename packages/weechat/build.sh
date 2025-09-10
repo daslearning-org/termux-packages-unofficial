@@ -1,35 +1,41 @@
 TERMUX_PKG_HOMEPAGE=https://weechat.org/
 TERMUX_PKG_DESCRIPTION="Fast, light and extensible IRC chat client"
-TERMUX_PKG_LICENSE="GPL-2.0"
+TERMUX_PKG_LICENSE="GPL-3.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="3.6"
-TERMUX_PKG_AUTO_UPDATE=true
-TERMUX_PKG_SRCURL=https://www.weechat.org/files/src/weechat-${TERMUX_PKG_VERSION}.tar.bz2
-TERMUX_PKG_SHA256=1a460dfd8e0b410afb19d483bb4b9c5d733dc163c0a8a0f5b7125790e8493037
-TERMUX_PKG_DEPENDS="libiconv, ncurses, libgcrypt, libcurl, libgnutls, libandroid-support, zlib, zstd"
+# `weechat-python-plugin` depends on libpython${TERMUX_PYTHON_VERSION}.so.
+# Please revbump and rebuild when bumping TERMUX_PYTHON_VERSION.
+TERMUX_PKG_VERSION="4.3.5"
+TERMUX_PKG_SRCURL=https://www.weechat.org/files/src/weechat-${TERMUX_PKG_VERSION}.tar.xz
+TERMUX_PKG_SHA256=e6dbc4c832da5c5b85e496fefc15237fbbe2a8f7ba2fbe81ee071dc0c66b4be3
+TERMUX_PKG_DEPENDS="libandroid-support, libcurl, libgcrypt, libgnutls, libiconv, ncurses, zlib, zstd"
 TERMUX_PKG_BREAKS="weechat-dev"
 TERMUX_PKG_REPLACES="weechat-dev"
-TERMUX_PKG_RM_AFTER_INSTALL="bin/weechat-curses share/man/man1/weechat-headless.1 share/icons"
+TERMUX_PKG_AUTO_UPDATE=true
+TERMUX_PKG_RM_AFTER_INSTALL="
+bin/weechat-curses
+share/icons
+share/man/man1/weechat-headless.1
+"
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
--DCA_FILE=$TERMUX_PREFIX/etc/tls/cert.pem
+-DGETTEXT_FOUND=ON
+-DENABLE_CJSON=OFF
+-DENABLE_GUILE=OFF
 -DENABLE_HEADLESS=OFF
+-DENABLE_JAVASCRIPT=OFF
 -DENABLE_LUA=ON
 -DENABLE_MAN=ON
 -DENABLE_PERL=ON
--DENABLE_PYTHON3=ON
--DENABLE_TCL=OFF
+-DENABLE_PYTHON=ON
 -DENABLE_PHP=OFF
 -DENABLE_RUBY=ON
--DENABLE_JAVASCRIPT=OFF
--DENABLE_GUILE=OFF
 -DENABLE_SPELL=OFF
+-DENABLE_TCL=OFF
 -DENABLE_TESTS=OFF
--DSTRICT=ON
 -DMSGFMT_EXECUTABLE=$(command -v msgfmt)
 -DMSGMERGE_EXECUTABLE=$(command -v msgmerge)
 -DXGETTEXT_EXECUTABLE=$(command -v xgettext)
 "
 
 termux_step_pre_configure() {
-	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPKG_CONFIG_EXECUTABLE=$PKG_CONFIG"
+	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPKG_CONFIG_EXECUTABLE=${PKG_CONFIG}"
 }

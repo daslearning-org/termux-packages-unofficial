@@ -2,19 +2,18 @@ TERMUX_PKG_HOMEPAGE=https://www.videolan.org/
 TERMUX_PKG_DESCRIPTION="A popular libre and open source media player and multimedia engine"
 TERMUX_PKG_LICENSE="GPL-2.0, LGPL-2.1"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION=3.0.17.4
-TERMUX_PKG_REVISION=3
+TERMUX_PKG_VERSION="3.0.21"
 TERMUX_PKG_SRCURL=https://download.videolan.org/pub/videolan/vlc/${TERMUX_PKG_VERSION}/vlc-${TERMUX_PKG_VERSION}.tar.xz
-TERMUX_PKG_SHA256=8c5a62d88a4fb45c1b095cf10befef217dfa87aedcec5184b9e7d590b6dd4133
-TERMUX_PKG_DEPENDS="avahi, chromaprint, dbus, ffmpeg, fluidsynth, fontconfig, freetype, fribidi, gdk-pixbuf, glib, gst-plugins-base, harfbuzz, liba52, libandroid-shmem, libandroid-spawn, libaom, libarchive, libass, libbluray, libc++, libcaca, libcairo, libcddb, libdav1d, libdvbpsi, libdvdread, libflac, libgcrypt, libgnutls, libiconv, libidn, libjpeg-turbo, liblua52, libmad, libnfs, libogg, libopus, libpng, librsvg, libsecret, libsoxr, libssh2, libtheora, libtwolame, libvorbis, libvpx, libx11, libx264, libx265, libxcb, libxml2, mpg123, ncurses, pulseaudio, samba, taglib, zlib"
-TERMUX_PKG_BUILD_DEPENDS="libebml, libmatroska, xorgproto"
+TERMUX_PKG_SHA256=24dbbe1d7dfaeea0994d5def0bbde200177347136dbfe573f5b6a4cee25afbb0
+TERMUX_PKG_DEPENDS="chromaprint, dbus, ffmpeg, fluidsynth, fontconfig, freetype, fribidi, glib, gst-plugins-base, gstreamer, harfbuzz, liba52, libandroid-shmem, libandroid-spawn, libaom, libarchive, libass, libbluray, libc++, libcaca, libcairo, libcddb, libdav1d, libdvbpsi, libdvdnav, libdvdread, libebml, libflac, libgcrypt, libgnutls, libgpg-error, libiconv, libidn, libjpeg-turbo, liblua52, libmad, libmatroska, libmpeg2, libnfs, libogg, libopus, libpng, librsvg, libsecret, libsoxr, libssh2, libtheora, libtwolame, libvorbis, libvpx, libx11, libx264, libx265, libxcb, libxml2, mpg123, ncurses, opengl, pulseaudio, samba, taglib, zlib"
+TERMUX_PKG_BUILD_DEPENDS="xorgproto"
+TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --disable-static
 --disable-live555
 --disable-dc1394
 --disable-dv1394
 --disable-linsys
---disable-dvdnav
 --disable-opencv
 --disable-dsm
 --disable-v4l2
@@ -34,7 +33,6 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --disable-d3d11va
 --disable-faad
 --disable-dca
---disable-libmpeg2
 --disable-speex
 --disable-spatialaudio
 --disable-schroedinger
@@ -63,6 +61,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --disable-goom
 --disable-projectm
 --disable-vsxu
+--disable-avahi
 --disable-udev
 --disable-mtp
 --disable-upnp
@@ -83,4 +82,9 @@ termux_step_pre_configure() {
 
 	local _libgcc="$($CC -print-libgcc-file-name)"
 	LDFLAGS+=" -L$(dirname $_libgcc) -l:$(basename $_libgcc)"
+}
+
+termux_step_post_configure() {
+	# Avoid overlinking
+	sed -i 's/ -shared / -Wl,--as-needed\0/g' ./libtool
 }

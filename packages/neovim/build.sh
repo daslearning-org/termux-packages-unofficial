@@ -1,26 +1,35 @@
 TERMUX_PKG_HOMEPAGE=https://neovim.io/
 TERMUX_PKG_DESCRIPTION="Ambitious Vim-fork focused on extensibility and agility (nvim)"
-TERMUX_PKG_LICENSE="Apache-2.0"
-TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="0.7.2"
+TERMUX_PKG_LICENSE="Apache-2.0, VIM License"
+TERMUX_PKG_LICENSE_FILE="LICENSE.txt"
+TERMUX_PKG_MAINTAINER="Joshua Kahn @TomJo2000"
+TERMUX_PKG_VERSION="0.10.1"
 TERMUX_PKG_SRCURL=https://github.com/neovim/neovim/archive/v${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=ccab8ca02a0c292de9ea14b39f84f90b635a69282de38a6b4ccc8565bc65d096
+TERMUX_PKG_SHA256=edce96e79903adfcb3c41e9a8238511946325ea9568fde177a70a614501af689
 TERMUX_PKG_AUTO_UPDATE=true
-TERMUX_PKG_DEPENDS="libiconv, libuv, luv, libmsgpack, libandroid-support, libvterm, libtermkey, libluajit, libunibilium, libtreesitter"
+TERMUX_PKG_UPDATE_VERSION_REGEXP="^\d+\.\d+\.\d+$"
+TERMUX_PKG_DEPENDS="libiconv, libuv, luv, libmsgpack, libvterm (>= 1:0.3-0), libluajit, libunibilium, libtreesitter, libandroid-support, lua51-lpeg, tree-sitter-parsers"
 TERMUX_PKG_HOSTBUILD=true
 
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 -DENABLE_JEMALLOC=OFF
 -DGETTEXT_MSGFMT_EXECUTABLE=$(command -v msgfmt)
 -DGETTEXT_MSGMERGE_EXECUTABLE=$(command -v msgmerge)
--DGPERF_PRG=$TERMUX_PKG_HOSTBUILD_DIR/deps/usr/bin/gperf
--DLUA_PRG=$TERMUX_PKG_HOSTBUILD_DIR/deps/usr/bin/luajit
 -DPKG_CONFIG_EXECUTABLE=$(command -v pkg-config)
 -DXGETTEXT_PRG=$(command -v xgettext)
 -DLUAJIT_INCLUDE_DIR=$TERMUX_PREFIX/include/luajit-2.1
+-DLPEG_LIBRARY=$TERMUX_PREFIX/lib/liblpeg-5.1.so
 -DCOMPILE_LUA=OFF
 "
 TERMUX_PKG_CONFFILES="share/nvim/sysinit.vim"
+
+termux_pkg_auto_update() {
+	# Get the latest release tag:
+	local tag
+	tag="$(termux_github_api_get_tag "${TERMUX_PKG_SRCURL}" \
+		latest-regex "${TERMUX_PKG_UPDATE_VERSION_REGEXP}")"
+	termux_pkg_upgrade_version "$tag"
+}
 
 _patch_luv() {
 	# git submodule update --init deps/lua-compat-5.3 failed
@@ -42,15 +51,19 @@ termux_step_host_build() {
 
 	mkdir -p $TERMUX_PKG_HOSTBUILD_DIR/deps
 	cd $TERMUX_PKG_HOSTBUILD_DIR/deps
-	cmake $TERMUX_PKG_SRCDIR/third-party
+	cmake $TERMUX_PKG_SRCDIR/cmake.deps
 
-	make -j 1 ||
-		(_patch_luv $TERMUX_PKG_HOSTBUILD_DIR/deps && make -j 1)
+	make -j 1 \
+		|| (_patch_luv $TERMUX_PKG_HOSTBUILD_DIR/deps && make -j 1)
 
 	cd $TERMUX_PKG_SRCDIR
 
 	make CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=$TERMUX_PKG_HOSTBUILD_DIR -DUSE_BUNDLED_LUAROCKS=ON" install ||
 		(_patch_luv $TERMUX_PKG_SRCDIR/.deps && make CMAKE_EXTRA_FLAGS="-DCMAKE_INSTALL_PREFIX=$TERMUX_PKG_HOSTBUILD_DIR -DUSE_BUNDLED_LUAROCKS=ON" install)
+
+	# Copy away host-built libnlua0.so used by src/nvim/generators/preload.lua.
+	# We patch src/nvim/CMakeLists.txt to use this instead of the cross-compiled one.
+	cp ./build/lib/libnlua0.so $TERMUX_PKG_HOSTBUILD_DIR/
 
 	make distclean
 	rm -Rf build/
@@ -66,6 +79,9 @@ termux_step_post_make_install() {
 	local _CONFIG_DIR=$TERMUX_PREFIX/share/nvim
 	mkdir -p $_CONFIG_DIR
 	cp $TERMUX_PKG_BUILDER_DIR/sysinit.vim $_CONFIG_DIR/
+
+	# Tree-sitter grammars are packaged separately and installed into TERMUX_PREFIX/lib/tree_sitter.
+	ln -s "${TERMUX_PREFIX}"/lib/tree_sitter "${TERMUX_PREFIX}"/share/nvim/runtime/parser
 }
 
 termux_step_create_debscripts() {

@@ -2,15 +2,15 @@ TERMUX_PKG_HOMEPAGE=https://testssl.sh/
 TERMUX_PKG_DESCRIPTION="Testing TLS/SSL encryption anywhere on any port."
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION=3.0.7
+TERMUX_PKG_VERSION="3.0.9"
 TERMUX_PKG_SRCURL=https://github.com/drwetter/testssl.sh/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=c2beb3ae1fc1301ad845c7aa01c0a292c41b95747ef67f34601f21fb2da16145
+TERMUX_PKG_SHA256=75ecbe4470e74f9ad17f4c4ac733be123b0f67d676ed24cc2b30adb41561e05f
 TERMUX_PKG_DEPENDS="bash, ca-certificates, coreutils, curl, gawk, openssl-tool, procps, resolv-conf, socat"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_PLATFORM_INDEPENDENT=true
 TERMUX_PKG_AUTO_UPDATE=true
+TERMUX_PKG_UPDATE_METHOD=repology
 TERMUX_PKG_UPDATE_VERSION_REGEXP="\d+\.\d+\.\d+"
-
 TERMUX_PKG_CONFFILES="
 etc/testssl/Apple.pem
 etc/testssl/ca_hashes.txt

@@ -3,9 +3,11 @@ TERMUX_PKG_DESCRIPTION="Library implementing the SSL and TLS protocols as well a
 TERMUX_PKG_LICENSE="custom"
 TERMUX_PKG_LICENSE_FILE="LICENSE"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION=1.1.1q
-TERMUX_PKG_SRCURL=https://www.openssl.org/source/openssl-${TERMUX_PKG_VERSION/\~/-}.tar.gz
-TERMUX_PKG_SHA256=d7939ce614029cdff0b6c20f0e2e5703158a489a72b2507b8bd51bf8c8fd10ca
+_VERSION=1.1.1w
+TERMUX_PKG_VERSION=1:${_VERSION}
+TERMUX_PKG_SRCURL=https://www.openssl.org/source/openssl-${_VERSION/\~/-}.tar.gz
+TERMUX_PKG_SHA256=cf3098950cb4d853ad95c0841f1f9c6d3dc102dccfcacd521d93925208b76ac8
+TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_DEPENDS="ca-certificates, zlib"
 TERMUX_PKG_CONFFILES="etc/tls/openssl.cnf"
 TERMUX_PKG_RM_AFTER_INSTALL="bin/c_rehash etc/"
@@ -50,7 +52,7 @@ termux_step_configure() {
 
 termux_step_make() {
 	make depend
-	make -j $TERMUX_MAKE_PROCESSES all
+	make -j $TERMUX_PKG_MAKE_PROCESSES all
 }
 
 termux_step_make_install() {

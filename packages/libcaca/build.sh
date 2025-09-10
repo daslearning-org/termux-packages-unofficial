@@ -31,7 +31,7 @@ termux_step_host_build() {
 	cd autoconf
 	tar xf $AUTOCONF_TARFILE --strip-components=1
 	./configure --prefix=$_PREFIX_FOR_BUILD
-	make -j $TERMUX_MAKE_PROCESSES
+	make -j $TERMUX_PKG_MAKE_PROCESSES
 	make install
 }
 
@@ -46,15 +46,5 @@ termux_step_post_configure() {
 	if [ $TERMUX_ARCH = x86_64 ]; then
 		# Remove troublesome asm usage:
 		perl -p -i -e 's/#define HAVE_FLDLN2 1//' $TERMUX_PKG_BUILDDIR/config.h
-	fi
-}
-
-termux_step_post_massage() {
-	cd ${TERMUX_PKG_MASSAGEDIR}/${TERMUX_PREFIX}/lib || exit 1
-	if [ ! -e "./libcaca.so.0" ]; then
-		ln -sf libcaca.so libcaca.so.0
-	fi
-	if [ ! -e "./libcaca++.so.0" ]; then
-		ln -sf libcaca++.so libcaca++.so.0
 	fi
 }

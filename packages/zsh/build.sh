@@ -2,9 +2,10 @@ TERMUX_PKG_HOMEPAGE=https://www.zsh.org
 TERMUX_PKG_DESCRIPTION="Shell with lots of features"
 TERMUX_PKG_LICENSE="custom"
 TERMUX_PKG_LICENSE_FILE="LICENCE"
-TERMUX_PKG_MAINTAINER="@termux"
+TERMUX_PKG_MAINTAINER="Joshua Kahn @TomJo2000"
 TERMUX_PKG_VERSION=5.9
-TERMUX_PKG_SRCURL=https://fossies.org/linux/misc/zsh-${TERMUX_PKG_VERSION}.tar.xz
+TERMUX_PKG_REVISION=5
+TERMUX_PKG_SRCURL="https://sourceforge.net/projects/zsh/files/zsh/$TERMUX_PKG_VERSION/zsh-$TERMUX_PKG_VERSION".tar.xz
 TERMUX_PKG_SHA256=9b8d1ecedd5b5e81fbf1918e876752a7dd948e05c1a0dba10ab863842d45acd5
 # Remove hard link to bin/zsh as Android does not support hard links:
 TERMUX_PKG_RM_AFTER_INSTALL="bin/zsh-${TERMUX_PKG_VERSION}"
@@ -15,6 +16,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --enable-pcre
 --enable-cap
 --enable-etcdir=$TERMUX_PREFIX/etc
+zsh_cv_path_wtmp=no
 ac_cv_header_utmp_h=no
 ac_cv_func_getpwuid=yes
 ac_cv_func_setresgid=no
@@ -28,6 +30,36 @@ TERMUX_PKG_RM_AFTER_INSTALL+="
 share/zsh/${TERMUX_PKG_VERSION}/functions/_pkg5
 "
 
+termux_step_pre_configure() {
+
+	## fix "largefile" for arithmetic larger than sint32
+	## as zsh force disable the detection of these flags in its ./configure when running in a cross-build environment
+	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+="
+	zsh_cv_printf_has_lld=yes
+	zsh_cv_rlim_t_is_longer=no
+	zsh_cv_type_rlim_t_is_unsigned=yes
+	"
+	if [[ "$TERMUX_ARCH" = arm || "$TERMUX_ARCH" = i686 ]] ; then
+		## this essentially attempts to add zsh_cv_64_bit_type="long long" in EXTRA_CONFIGURE_ARGS.
+		## the space in argument to this flag make build script of termux
+		## wrongly splitted the flag as separated flags
+		## the reason is termux build script does not use ${TERMUX_PKG_EXTRA_CONFIGURE_ARGS[@]}
+		## (which is required to keep space in each flags by using an array) during shell expansion
+		perl -0pe 's#zsh_cv_64_bit_type=no#zsh_cv_64_bit_type="long long"#ms' < configure > configure.newf
+		cat configure.newf > configure
+		rm configure.newf
+
+		TERMUX_PKG_EXTRA_CONFIGURE_ARGS+="
+		zsh_cv_off_t_is_64_bit=yes
+		"
+	else
+		TERMUX_PKG_EXTRA_CONFIGURE_ARGS+="
+		zsh_cv_64_bit_type=long
+		"
+	fi
+
+}
+
 termux_step_post_configure() {
 	# Certain packages are not safe to build on device because their
 	# build.sh script deletes specific files in $TERMUX_PREFIX.
@@ -36,24 +68,29 @@ termux_step_post_configure() {
 	fi
 
 	# INSTALL file: "For a non-dynamic zsh, the default is to compile the complete, compctl, zle,
-	# computil, complist, sched, # parameter, zleparameter and rlimits modules into the shell,
+	# computil, complist, sched, parameter, zleparameter and rlimits modules into the shell,
 	# and you will need to edit config.modules to make any other modules available."
 	# Since we build zsh non-dynamically (since dynamic loading doesn't work on Android when enabled),
 	# we need to explicitly enable the additional modules we want.
-	# - The files module is needed by `compinstall` (https://github.com/termux/termux-packages/issues/61).
-	# - The regex module seems to be used by several extensions.
-	# - The curses, socket and zprof modules was desired by BrainDamage on IRC (#termux).
-	# - The deltochar and mathfunc modules is used by grml-zshrc (https://github.com/termux/termux-packages/issues/494).
-	# - The system module is needed by zplug (https://github.com/termux/termux-packages/issues/659).
-	# - The zpty module is needed by zsh-async (https://github.com/termux/termux-packages/issues/672).
-	# - The stat module is needed by zui (https://github.com/termux/termux-packages/issues/2829).
-	# - The mapfile module was requested in https://github.com/termux/termux-packages/issues/3116.
-	# - The zselect module is used by multiple plugins (https://github.com/termux/termux-packages/issues/4939)
-	# - The param_private module was requested in https://github.com/termux/termux-packages/issues/7391.
-	# - The cap module was requested in https://github.com/termux/termux-packages/issues/3102.
-	for module in cap curses deltochar files mapfile mathfunc pcre regex \
-		socket stat system zprof zpty zselect param_private
-	do
+	local modules=(
+	'cap'           # - The cap module was requested in https://github.com/termux/termux-packages/issues/3102.
+	'curses'        # - The curses module was requested by BrainDamage on IRC (#termux).
+	'deltochar'     # - The deltochar module is used by grml-zshrc https://github.com/termux/termux-packages/issues/494.
+	'files'         # - The files module is needed by `compinstall` https://github.com/termux/termux-packages/issues/61.
+	'mapfile'       # - The mapfile module was requested in https://github.com/termux/termux-packages/issues/3116.
+	'mathfunc'      # - The mathfunc module is used by grml-zshrc https://github.com/termux/termux-packages/issues/494.
+	'newuser'       # - The newuser module was requested in https://github.com/termux/termux-packages/discussions/20603.
+	'param_private' # - The param_private module was requested in https://github.com/termux/termux-packages/issues/7391.
+	'pcre'          # - The pcre module expands on the regex modules capabilities and is used by several extensions.
+	'regex'         # - The regex module seems to be used by several extensions.
+	'socket'        # - The socket module was requested by BrainDamage on IRC (#termux).
+	'stat'          # - The stat module is needed by zui https://github.com/termux/termux-packages/issues/2829.
+	'system'        # - The system module is needed by zplug https://github.com/termux/termux-packages/issues/659.
+	'zprof'         # - The zprof module was requested by BrainDamage on IRC (#termux).
+	'zpty'          # - The zpty module is needed by zsh-async https://github.com/termux/termux-packages/issues/672.
+	'zselect'       # - The zselect module is used by multiple plugins https://github.com/termux/termux-packages/issues/4939
+	)
+	for module in "${modules[@]}"; do
 		perl -p -i -e "s|${module}.mdd link=no|${module}.mdd link=static|" $TERMUX_PKG_BUILDDIR/config.modules
 	done
 }

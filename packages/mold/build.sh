@@ -1,39 +1,12 @@
 TERMUX_PKG_HOMEPAGE=https://github.com/rui314/mold
 TERMUX_PKG_DESCRIPTION="mold: A Modern Linker"
-TERMUX_PKG_LICENSE="AGPL-V3"
+TERMUX_PKG_LICENSE="MIT"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="1.3.1"
-TERMUX_PKG_REVISION=1
+TERMUX_PKG_VERSION="2.32.1"
 TERMUX_PKG_SRCURL=https://github.com/rui314/mold/archive/v${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=d436e2d4c1619a97aca0e28f26c4e79c0242d10ce24e829c1b43cfbdd196fd77
-TERMUX_PKG_DEPENDS="libc++, openssl, zlib, libandroid-spawn"
-TERMUX_PKG_BUILD_IN_SRC=true
+TERMUX_PKG_SHA256=f3c9a527d884c635834fe7d79b3de959b00783bf9446280ea274d996f0335825
+TERMUX_PKG_DEPENDS="libandroid-spawn, libc++, openssl, zlib"
 TERMUX_PKG_AUTO_UPDATE=true
 
-termux_step_pre_configure() {
-	# onetbb use cmake
-	termux_setup_cmake
-}
-
-termux_step_make() {
-	# Have to override Makefile variables here
-	# else need to patch Makefile
-	# When building mold-wrapper.so cant find
-	# spawn.h from libandroid-spawn for some reason
-	# Manually link just in case to avoid runtime surprises
-	make -j "$TERMUX_MAKE_PROCESSES" \
-		PREFIX="$TERMUX_PREFIX" \
-		CFLAGS="$CFLAGS -I${TERMUX_PREFIX}/include" \
-		CXXFLAGS="$CXXFLAGS -I${TERMUX_PREFIX}/include" \
-		STRIP="$STRIP" \
-		MOLD_WRAPPER_LDFLAGS=" -ldl -landroid-spawn"
-}
-
-termux_step_make_install() {
-	make -j "$TERMUX_MAKE_PROCESSES" install \
-		PREFIX="$TERMUX_PREFIX" \
-		CFLAGS="$CFLAGS -I${TERMUX_PREFIX}/include" \
-		CXXFLAGS="$CXXFLAGS -I${TERMUX_PREFIX}/include" \
-		STRIP="$STRIP" \
-		MOLD_WRAPPER_LDFLAGS=" -ldl -landroid-spawn"
-}
+# dont depend on system libtbb, xxhash
+# https://github.com/rui314/mold/commit/add94b86266b40bc66789e26358675da9d603919#commitcomment-80494077

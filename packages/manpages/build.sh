@@ -1,14 +1,14 @@
 TERMUX_PKG_HOMEPAGE=https://www.kernel.org/doc/man-pages/
 TERMUX_PKG_DESCRIPTION="Man pages for linux kernel and C library interfaces"
-TERMUX_PKG_LICENSE="GPL-2.0"
+TERMUX_PKG_LICENSE="custom"
+TERMUX_PKG_LICENSE_FILE="LICENSES/Linux-man-pages-copyleft.txt, _man-pages-posix/POSIX-COPYRIGHT"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION=(5.13
-		    2017)
-TERMUX_PKG_REVISION=1
-TERMUX_PKG_SHA256=(614dae3efe7dfd480986763a2a2a8179215032a5a4526c0be5e899a25f096b8b
-		   ce67bb25b5048b20dad772e405a83f4bc70faf051afa289361c81f9660318bc3)
-TERMUX_PKG_SRCURL=(https://www.kernel.org/pub/linux/docs/man-pages/man-pages-${TERMUX_PKG_VERSION}.tar.xz
-		   https://www.kernel.org/pub/linux/docs/man-pages/man-pages-posix/man-pages-posix-${TERMUX_PKG_VERSION[1]}-a.tar.xz)
+TERMUX_PKG_VERSION=(6.9.1
+                    2017)
+TERMUX_PKG_SHA256=(e23cbac29f110ba571f0da8523e79d373691466ed7f2a31301721817d34530bd
+                   ce67bb25b5048b20dad772e405a83f4bc70faf051afa289361c81f9660318bc3)
+TERMUX_PKG_SRCURL=(https://www.kernel.org/pub/linux/docs/man-pages/man-pages-${TERMUX_PKG_VERSION[0]}.tar.xz
+                   https://www.kernel.org/pub/linux/docs/man-pages/man-pages-posix/man-pages-posix-${TERMUX_PKG_VERSION[1]}-a.tar.xz)
 TERMUX_PKG_DEPENDS="man"
 TERMUX_PKG_CONFLICTS="linux-man-pages"
 TERMUX_PKG_REPLACES="linux-man-pages"
@@ -16,8 +16,6 @@ TERMUX_PKG_PROVIDES="linux-man-pages"
 TERMUX_PKG_EXTRA_MAKE_ARGS="prefix=$TERMUX_PREFIX"
 TERMUX_PKG_PLATFORM_INDEPENDENT=true
 TERMUX_PKG_BUILD_IN_SRC=true
-# Problems with changing permissions of non-built files
-TERMUX_MAKE_PROCESSSES=1
 
 # Do not remove an entire section; intro should always be included.
 # Bionic libc does not provide <aio.h>, <monetary.h> or pthread_cancel.
@@ -41,12 +39,17 @@ share/man/man7/man.7
 share/man/man7/mdoc.7
 "
 
-termux_step_pre_configure() {
-	export TERMUX_MAKE_PROCESSES=1
+termux_step_post_get_source() {
+	mv man-pages-posix-${TERMUX_PKG_VERSION[1]} _man-pages-posix
+}
 
-	# Bundle posix man pages in same package:
-	cd man-pages-posix-${TERMUX_PKG_VERSION[1]}
-	make install
+termux_step_make() {
+	:
+}
+
+termux_step_post_make_install() {
+	# Bundle POSIX man pages in the same package:
+	make -C _man-pages-posix install
 }
 
 termux_step_post_massage() {

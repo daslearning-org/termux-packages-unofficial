@@ -1,10 +1,10 @@
 TERMUX_PKG_HOMEPAGE=https://github.com/FluidSynth/fluidsynth
 TERMUX_PKG_DESCRIPTION="Software synthesizer based on the SoundFont 2 specifications"
 TERMUX_PKG_LICENSE="LGPL-2.1"
-TERMUX_PKG_MAINTAINER="Yonle <yonle@duck.com>"
-TERMUX_PKG_VERSION=2.2.9
+TERMUX_PKG_MAINTAINER="@termux"
+TERMUX_PKG_VERSION="2.3.5"
 TERMUX_PKG_SRCURL=https://github.com/FluidSynth/fluidsynth/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=bc62494ec2554fdcfc01512a2580f12fc1e1b01ce37a18b370dd7902af7a8159
-TERMUX_PKG_DEPENDS="glib, pulseaudio"
+TERMUX_PKG_SHA256=f89e8e983ecfb4a5b4f5d8c2b9157ed18d15ed2e36246fa782f18abaea550e0d
+TERMUX_PKG_AUTO_UPDATE=true
+TERMUX_PKG_DEPENDS="dbus, glib, libc++, libsndfile, pulseaudio, readline"
 TERMUX_PKG_EXTRA_CONFIGURE_ARGS="-DLIB_INSTALL_DIR=${TERMUX_PREFIX}/lib"
-
