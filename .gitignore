@@ -12,6 +12,8 @@ scripts/.vagrant/
 # Logs
 scripts/*.log
 /*.log
+logs/
+locals/
 
 # Built *.deb files.
 /debs/
