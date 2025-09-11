@@ -9,6 +9,9 @@ termux_step_setup_toolchain() {
 		if [ "${TERMUX_NDK_VERSION}" = "27c" ]; then
 			TERMUX_STANDALONE_TOOLCHAIN+="-v1"
 			termux_setup_toolchain_27c
+		elif [ "${TERMUX_NDK_VERSION}" = "25b" ]; then
+			TERMUX_STANDALONE_TOOLCHAIN+="-v1"
+			termux_setup_toolchain_25b
 		elif [ "${TERMUX_NDK_VERSION}" = 23c ]; then
 			TERMUX_STANDALONE_TOOLCHAIN+="-v8"
 			termux_setup_toolchain_23c

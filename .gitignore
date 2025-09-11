@@ -13,6 +13,7 @@ scripts/.vagrant/
 scripts/*.log
 /*.log
 logs/
+locals/
 
 # Misc archives
 /*\.deb

@@ -222,7 +222,7 @@ source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_setup_build_folders.sh"
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_start_build.sh"
 
 # Cleans up files from already built packages. Not to be overridden by packages.
-# shellcheck source=scripts/build/termux_step_cleanup_packages.sh
+# shellcheck source=scripts/build/termux_step_start_build.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_cleanup_packages.sh"
 
 # Download or build dependencies. Not to be overridden by packages.
@@ -234,7 +234,7 @@ source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_create_timestamp_file.sh"
 source "$TERMUX_SCRIPTDIR/scripts/build/get_source/termux_step_get_source.sh"
 
 # Run from termux_step_get_source if TERMUX_PKG_SRCURL begins with "git+".
-# shellcheck source=scripts/build/get_source/termux_git_clone_src.sh
+# shellcheck source=scripts/build/get_source/termux_step_get_source.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/get_source/termux_git_clone_src.sh"
 
 # Run from termux_step_get_source if TERMUX_PKG_SRCURL does not begin with "git+".
@@ -261,9 +261,19 @@ source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_handle_host_build.sh"
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_host_build.sh"
 
 # Setup a standalone Android NDK toolchain. Called from termux_step_setup_toolchain.
-source "$TERMUX_SCRIPTDIR/scripts/build/toolchain/termux_setup_toolchain_25b.sh"
+# shellcheck source=scripts/build/toolchain/termux_setup_toolchain_27c.sh
+source "$TERMUX_SCRIPTDIR/scripts/build/toolchain/termux_setup_toolchain_27c.sh"
 
-# Setup variables used by the build. Not to be overridden by packages.
+# Setup a standalone Android NDK 23c toolchain. Called from termux_step_setup_toolchain.
+# shellcheck source=scripts/build/toolchain/termux_setup_toolchain_23c.sh
+source "$TERMUX_SCRIPTDIR/scripts/build/toolchain/termux_setup_toolchain_23c.sh"
+
+# Setup a standalone Glibc GNU toolchain. Called from termux_step_setup_toolchain.
+# shellcheck source=scripts/build/toolchain/termux_setup_toolchain_gnu.sh
+source "$TERMUX_SCRIPTDIR/scripts/build/toolchain/termux_setup_toolchain_gnu.sh"
+
+# Runs termux_step_setup_toolchain_${TERMUX_NDK_VERSION}. Not to be overridden by packages.
+# shellcheck source=scripts/build/termux_step_setup_toolchain.sh
 source "$TERMUX_SCRIPTDIR/scripts/build/termux_step_setup_toolchain.sh"
 
 # Apply all *.patch files for the package. Not to be overridden by packages.
@@ -716,13 +726,6 @@ for ((i=0; i<${#PACKAGE_LIST[@]}; i++)); do
 			termux_step_post_get_source
 			termux_step_handle_host_build
 		fi
-
-		# Setup NDK 25b
-		if [ ! -d "$HOME/lib/android-ndk-r25b" ]; then
-			termux_error_exit "Android NDK r25b not found at $HOME/lib/android-ndk-r25b"
-		fi
-		export NDK="$HOME/lib/android-ndk-r25b"
-		export TERMUX_NDK_VERSION="25b"
 
 		termux_step_setup_toolchain
 
