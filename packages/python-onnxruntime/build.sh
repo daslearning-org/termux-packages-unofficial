@@ -7,7 +7,6 @@ TERMUX_PYTHON_VERSION="3.11"
 TERMUX_PREFIX="/data/data/com.termux/files/usr"
 #TERMUX_PKG_SRCURL=git+https://github.com/microsoft/onnxruntime
 TERMUX_PKG_SRCURL=https://github.com/microsoft/onnxruntime/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
-#TERMUX_PKG_SHA256=1e63499468dc069a31ea0226b531be1c1c31b185b80616f8707066aba599db12
 TERMUX_PKG_DEPENDS="abseil-cpp, libc++, protobuf, libre2"
 TERMUX_PKG_BUILD_DEPENDS="python-numpy-1265"
 TERMUX_PKG_BUILD_IN_SRC=true
@@ -54,11 +53,3 @@ termux_step_make_install() {
 	local _wheel="onnxruntime-${TERMUX_PKG_VERSION}-cp${_pyver}-cp${_pyver}-linux_${TERMUX_ARCH}.whl"
 	pip install --no-deps --prefix="$TERMUX_PREFIX" "$TERMUX_PKG_SRCDIR/dist/${_wheel}"
 }
-
-#termux_step_create_debscripts() {
-#	cat <<- EOF > ./postinst
-#	#!$TERMUX_PREFIX/bin/sh
-#	echo "Installing dependencies through pip..."
-#	pip3 install onnxruntime
-#	EOF
-#}

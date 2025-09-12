@@ -19,3 +19,11 @@ diff -u mlasi.h mlasi_updated.h > mlas-bfloat16.patch
 ```
 
 3. Then put the patch file [here](../packages/python-onnxruntime/0006-mlas-bfloat16.patch)
+
+
+### Packages or requirements
+
+1. `protoc` on container
+```bash
+sudo apt install -y protobuf-compiler
+```
