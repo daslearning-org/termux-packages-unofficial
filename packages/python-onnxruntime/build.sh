@@ -5,9 +5,11 @@ TERMUX_PKG_MAINTAINER="@termux"
 TERMUX_PKG_VERSION="1.22.1"
 TERMUX_PYTHON_VERSION="3.11"
 TERMUX_PREFIX="/data/data/com.termux/files/usr"
-TERMUX_PKG_SRCURL=git+https://github.com/microsoft/onnxruntime
+#TERMUX_PKG_SRCURL=git+https://github.com/microsoft/onnxruntime
+TERMUX_PKG_SRCURL=https://github.com/microsoft/onnxruntime/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz
+#TERMUX_PKG_SHA256=1e63499468dc069a31ea0226b531be1c1c31b185b80616f8707066aba599db12
 TERMUX_PKG_DEPENDS="abseil-cpp, libc++, protobuf, libre2"
-TERMUX_PKG_BUILD_DEPENDS="python-numpy"
+TERMUX_PKG_BUILD_DEPENDS="python-numpy-1265"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_PYTHON_COMMON_DEPS="wheel, build, packaging, numpy"
 TERMUX_PKG_AUTO_UPDATE=true
@@ -21,6 +23,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 -Donnxruntime_USE_NNAPI_BUILTIN=ON
 -Donnxruntime_USE_XNNPACK=ON
 "
+#-Donnxruntime_DISABLE_BFLOAT16=ON
 
 termux_step_pre_configure() {
 	CPPFLAGS+=" -Wno-unused-variable"
@@ -31,7 +34,8 @@ termux_step_pre_configure() {
 
 	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPYTHON_EXECUTABLE=$(command -v python3)"
 	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DONNX_CUSTOM_PROTOC_EXECUTABLE=$(command -v protoc)"
-	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython_NumPy_INCLUDE_DIR=$TERMUX_PREFIX/lib/python$TERMUX_PYTHON_VERSION/site-packages/numpy/_core/include"
+	#TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -Donnxruntime_USE_BFLOAT16=OFF"
+	TERMUX_PKG_EXTRA_CONFIGURE_ARGS+=" -DPython_NumPy_INCLUDE_DIR=$TERMUX_PREFIX/lib/python$TERMUX_PYTHON_VERSION/site-packages/numpy/core/include"
 
 	local TERMUX_PKG_SRCDIR_SAVE="$TERMUX_PKG_SRCDIR"
 	TERMUX_PKG_SRCDIR+="/cmake"
